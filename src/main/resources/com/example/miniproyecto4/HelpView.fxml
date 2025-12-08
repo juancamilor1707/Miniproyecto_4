@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.miniproyecto4.controller.HelpController">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+
+    <Label text="AYUDA - BATALLA NAVAL" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
+
+    <ScrollPane fitToWidth="true" prefHeight="400.0">
+        <VBox spacing="15.0" maxWidth="700.0">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+
+            <Text text="OBJETIVO DEL JUEGO" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+            <Text text="Hunde toda la flota enemiga antes de que hundan la tuya." style="-fx-font-size: 14px;" wrappingWidth="650.0" />
+
+            <Text text="FLOTA (10 barcos)" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+            <Text text="• 1 Portaaviones (4 casillas)&#10;• 2 Submarinos (3 casillas cada uno)&#10;• 3 Destructores (2 casillas cada uno)&#10;• 4 Fragatas (1 casilla cada una)" style="-fx-font-size: 14px;" />
+
+            <Text text="COLOCACIÓN DE BARCOS" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+            <Text text="1. Haz clic en una celda del tablero para colocar un barco&#10;2. Presiona 'R' o el botón Rotar para cambiar la orientación&#10;3. Los barcos no pueden superponerse ni salirse del tablero&#10;4. Una vez colocados todos los barcos, presiona 'Comenzar Juego'" style="-fx-font-size: 14px;" wrappingWidth="650.0" />
+
+            <Text text="JUGABILIDAD" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+            <Text text="• AGUA: Disparas a una celda vacía (X blanca). Pierdes el turno.&#10;• TOCADO: Impactas parte de un barco. Sigues disparando.&#10;• HUNDIDO: Destruyes todas las partes de un barco. Sigues disparando.&#10;• No puedes disparar a la misma celda dos veces" style="-fx-font-size: 14px;" wrappingWidth="650.0" />
+
+            <Text text="CONTROLES" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+            <Text text="• Clic izquierdo: Colocar barco / Disparar&#10;• Tecla R: Rotar barco durante colocación&#10;• Ver Tablero Enemigo: Modo debug para verificación" style="-fx-font-size: 14px;" wrappingWidth="650.0" />
+        </VBox>
+    </ScrollPane>
+
+    <Button fx:id="backButton" text="Volver al Menú" prefWidth="200.0" style="-fx-font-size: 16px;" />
+</VBox>
