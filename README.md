@@ -331,8 +331,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Email: atuesta.juan@correounivalle.edu.co
 
 **Juan Camilo Ramos**
+- GitHub: [@juancamilor1707](https://github.com/juancamilor1707)
+- Email: juancamiloramos01@gmail.com
+
+**Juan Manuel**
 - GitHub: [@yourusername](https://github.com/juancamilor1707)
-- Email: your.email@example.com
+- Email: juan.munoz.delgado@gmail.com
+
 
 ---
 
