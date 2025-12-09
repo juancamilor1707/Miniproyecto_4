@@ -1,0 +1,17 @@
+module:com.example.miniproyecto4
+com.example.miniproyecto4
+com.example.miniproyecto4.controller
+com.example.miniproyecto4.model.AI
+com.example.miniproyecto4.model.Board
+com.example.miniproyecto4.model.Cell
+com.example.miniproyecto4.model.Exceptions
+com.example.miniproyecto4.model.Game
+com.example.miniproyecto4.model.GameSave
+com.example.miniproyecto4.model.Player
+com.example.miniproyecto4.model.Ship
+com.example.miniproyecto4.model.Shot
+com.example.miniproyecto4.model.Utils
+com.example.miniproyecto4.model.Validation
+com.example.miniproyecto4.view
+com.example.miniproyecto4.view.Components
+com.example.miniproyecto4.view.utils

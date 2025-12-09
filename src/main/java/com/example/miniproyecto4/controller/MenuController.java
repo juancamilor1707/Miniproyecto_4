@@ -11,6 +11,10 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import java.io.File;
 
+/**
+ * Controller for the main menu.
+ * Manages new game creation, game loading, help display, and application exit.
+ */
 public class MenuController {
 
     @FXML
@@ -30,6 +34,10 @@ public class MenuController {
 
     private GameManager gameManager;
 
+    /**
+     * Initializes the controller after FXML injection.
+     * Configures button actions and checks for incomplete saved games.
+     */
     @FXML
     public void initialize() {
         gameManager = GameManager.getInstance();
@@ -39,35 +47,31 @@ public class MenuController {
         helpButton.setOnAction(e -> handleHelp());
         exitButton.setOnAction(e -> handleExit());
 
-        // Verificar y limpiar partidas en SETUP antes de habilitar continuar
         checkAndCleanIncompleteSaves();
     }
 
     /**
-     * Verifica si hay partidas guardadas en modo SETUP y las elimina
+     * Checks for saved games in SETUP mode and deletes them.
+     * Enables the continue button only if a valid saved game exists.
      */
     private void checkAndCleanIncompleteSaves() {
         File saveFile = new File("battleship_save.ser");
 
         if (saveFile.exists()) {
             try {
-                // Intentar cargar para verificar el estado
                 gameManager.loadGame();
 
                 if (gameManager.getGameStatus() != GameStatus.PLAYING) {
-                    // Partida incompleta, eliminar archivos
                     saveFile.delete();
                     File playerData = new File("player_data.txt");
                     playerData.delete();
                     gameManager.resetGame();
                     continueButton.setDisable(true);
                 } else {
-                    // Partida válida, habilitar continuar
-                    gameManager.resetGame(); // Reset para no afectar el estado
+                    gameManager.resetGame();
                     continueButton.setDisable(false);
                 }
             } catch (Exception e) {
-                // Error al cargar, eliminar archivos corruptos
                 saveFile.delete();
                 File playerData = new File("player_data.txt");
                 playerData.delete();
@@ -78,6 +82,10 @@ public class MenuController {
         }
     }
 
+    /**
+     * Handles the new game button click.
+     * Validates the nickname and starts a new game.
+     */
     private void handleNewGame() {
         String nickname = nicknameField.getText().trim();
 
@@ -95,6 +103,10 @@ public class MenuController {
         stage.close();
     }
 
+    /**
+     * Handles the continue button click.
+     * Validates the nickname and loads the saved game.
+     */
     private void handleContinue() {
         String nickname = nicknameField.getText().trim();
 
@@ -119,7 +131,6 @@ public class MenuController {
             return;
         }
 
-        // Verificación adicional (aunque ya se hizo en initialize)
         if (gameManager.getGameStatus() != GameStatus.PLAYING) {
             showAlert("Error", "La partida guardada está incompleta.\n" +
                     "Inicia un nuevo juego.");
@@ -139,16 +150,30 @@ public class MenuController {
         stage.close();
     }
 
+    /**
+     * Handles the help button click.
+     * Opens the help window.
+     */
     private void handleHelp() {
         Help helpView = new Help();
         helpView.show();
     }
 
+    /**
+     * Handles the exit button click.
+     * Closes the application.
+     */
     private void handleExit() {
         Stage stage = (Stage) exitButton.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Displays an alert dialog with the given title and content.
+     *
+     * @param title The alert title
+     * @param content The alert message
+     */
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);

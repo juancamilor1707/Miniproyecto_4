@@ -8,21 +8,43 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 /**
- * Componente visual de una celda individual del tablero.
- * Representa visualmente los diferentes estados: vacío, barco, impacto, fallo, hundido.
- * Maneja eventos de mouse para interacción del usuario y muestra previews de colocación.
+ * Visual component representing an individual cell on the game board.
+ * Displays different states: empty, ship, hit, miss, and sunk.
+ * Handles mouse events for user interaction and displays placement previews.
+ * Extends StackPane to layer multiple visual elements.
  */
 public class CellView extends StackPane {
 
+    /**
+     * The background rectangle of the cell.
+     */
     private final Rectangle background;
+
+    /**
+     * The size of the cell in pixels (width and height).
+     */
     private final double size;
+
+    /**
+     * The current state of the cell (EMPTY, SHIP, HIT, MISS, SUNK).
+     */
     private String currentState;
+
+    /**
+     * Flag indicating whether a preview is currently active.
+     */
     private boolean isPreviewActive;
+
+    /**
+     * The original color of the cell before any preview or hover effects.
+     */
     private String originalColor;
 
     /**
-     * Constructor de la vista de celda.
-     * @param size El tamaño en píxeles de la celda (ancho y alto)
+     * Constructs a CellView with the specified size.
+     * Initializes the cell in empty state with water color and sets up mouse event handlers.
+     *
+     * @param size the size in pixels of the cell (width and height)
      */
     public CellView(double size) {
         this.size = size;
@@ -52,8 +74,9 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Establece el color de fondo de la celda.
-     * @param color El color en formato hexadecimal
+     * Sets the fill color of the cell's background.
+     *
+     * @param color the color in hexadecimal format
      */
     public void setFill(String color) {
         background.setFill(Color.web(color));
@@ -61,26 +84,26 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Muestra un preview visual de dónde quedará el barco.
-     * @param isValid true si la posición es válida (verde/oscuro), false si es inválida (rojo)
+     * Displays a visual preview of where a ship will be placed.
+     * Shows green for valid placement or red for invalid placement.
+     *
+     * @param isValid true if the position is valid (green/dark), false if invalid (red)
      */
     public void showPreview(boolean isValid) {
         if (currentState.equals("EMPTY")) {
             isPreviewActive = true;
             if (isValid) {
-                // Preview válido - color verde oscuro/gris oscuro
-                background.setFill(Color.web("#5A9F5A")); // Verde oscuro
+                background.setFill(Color.web("#5A9F5A"));
                 background.setOpacity(0.7);
             } else {
-                // Preview inválido - color rojo
-                background.setFill(Color.web("#E74C3C")); // Rojo
+                background.setFill(Color.web("#E74C3C"));
                 background.setOpacity(0.5);
             }
         }
     }
 
     /**
-     * Limpia el preview visual y restaura el color original.
+     * Clears the visual preview and restores the original color.
      */
     public void clearPreview() {
         if (isPreviewActive && currentState.equals("EMPTY")) {
@@ -91,8 +114,8 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Marca la celda como impactada.
-     * Cambia el color y agrega un marcador visual de impacto.
+     * Marks the cell as hit.
+     * Changes the color and adds a visual hit marker.
      */
     public void markAsHit() {
         currentState = "HIT";
@@ -107,8 +130,8 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Marca la celda como agua (disparo fallido).
-     * Agrega una X como indicador visual.
+     * Marks the cell as water (missed shot).
+     * Adds an X as a visual indicator.
      */
     public void markAsMiss() {
         currentState = "MISS";
@@ -124,8 +147,8 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Marca la celda como parte de un barco.
-     * Cambia el color para mostrar la posición del barco.
+     * Marks the cell as containing part of a ship.
+     * Changes the color to display the ship position.
      */
     public void markAsShip() {
         currentState = "SHIP";
@@ -136,8 +159,8 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Marca la celda como parte de un barco hundido.
-     * Cambia el color y agrega marcador de hundido.
+     * Marks the cell as part of a sunk ship.
+     * Changes the color and adds a sunk marker.
      */
     public void markAsSunk() {
         currentState = "SUNK";
@@ -152,7 +175,8 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Resetea la celda a su estado inicial vacío.
+     * Resets the cell to its initial empty state.
+     * Clears all visual markers and restores water color.
      */
     public void reset() {
         currentState = "EMPTY";
@@ -165,15 +189,17 @@ public class CellView extends StackPane {
     }
 
     /**
-     * Refresca la visualización de la celda.
+     * Refreshes the cell's visualization.
+     * Provided for compatibility; can be extended for future updates.
      */
     public void refresh() {
-        // Método para compatibilidad, puede ser usado para actualizaciones futuras
+        // Method for compatibility, can be used for future updates
     }
 
     /**
-     * Obtiene el estado actual de la celda.
-     * @return El estado actual ("EMPTY", "SHIP", "HIT", "MISS", "SUNK")
+     * Returns the current state of the cell.
+     *
+     * @return the current state (EMPTY, SHIP, HIT, MISS, or SUNK)
      */
     public String getCurrentState() {
         return currentState;

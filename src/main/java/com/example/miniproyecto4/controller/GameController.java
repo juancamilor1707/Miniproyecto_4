@@ -22,6 +22,11 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for the main game view.
+ * Manages the game flow including ship placement, turn-based shooting,
+ * board updates, and game state transitions.
+ */
 public class GameController {
 
     @FXML
@@ -60,6 +65,10 @@ public class GameController {
     private boolean placementMode;
     private List<Coordinate> previewCoordinates;
 
+    /**
+     * Initializes the controller after FXML injection.
+     * Sets up the game manager, creates the player fleet, and configures button actions.
+     */
     @FXML
     public void initialize() {
         gameManager = GameManager.getInstance();
@@ -75,6 +84,13 @@ public class GameController {
         showEnemyBoardButton.setOnAction(e -> handleShowEnemyBoard());
     }
 
+    /**
+     * Sets the board views for the player and enemy.
+     * Determines whether to load a saved game state or start placement mode.
+     *
+     * @param playerBoard The visual board for the player
+     * @param enemyBoard The visual board for the enemy
+     */
     public void setBoards(BoardView playerBoard, BoardView enemyBoard) {
         this.playerBoard = playerBoard;
         this.enemyBoard = enemyBoard;
@@ -86,6 +102,11 @@ public class GameController {
         }
     }
 
+    /**
+     * Loads and restores a previously saved game state.
+     * Restores both boards, ship counts, and game mode.
+     * If it's the computer's turn, automatically processes it.
+     */
     private void loadGameState() {
         placementMode = false;
 
@@ -108,10 +129,8 @@ public class GameController {
 
         setupGameMode();
 
-        // NUEVO: Verificar si es turno de la máquina y ejecutarlo automáticamente
         if (!gameManager.isPlayerTurn() && !gameManager.hasWinner()) {
             statusLabel.setText("Turno de la máquina...");
-            // Dar un pequeño delay para que el jugador vea el estado del tablero
             javafx.animation.PauseTransition initialDelay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
             initialDelay.setOnFinished(e -> processComputerTurn());
             initialDelay.play();
@@ -120,6 +139,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Restores the player's board state from the saved game.
+     * Marks all ship positions, hits, misses, and sunk ships.
+     */
     private void restorePlayerBoard() {
         List<IShip> ships = gameManager.getHumanPlayer().getBoard().getShips();
 
@@ -150,6 +173,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Restores the enemy's board state from the saved game.
+     * Only shows hits, misses, and sunk ships (not ship positions).
+     */
     private void restoreEnemyBoard() {
         int size = gameManager.getComputerPlayer().getBoard().getSize();
 
@@ -169,6 +196,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Sets up the ship placement mode at the start of the game.
+     * Configures cell event handlers for placement and preview display.
+     */
     private void setupPlacementMode() {
         updateShipsRemaining();
         updateCurrentShipLabel();
@@ -186,6 +217,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Shows a visual preview of ship placement at the given coordinate.
+     * Displays valid placements in green and invalid ones in red.
+     *
+     * @param coordinate The starting coordinate for the preview
+     */
     private void showShipPreview(Coordinate coordinate) {
         if (currentShipIndex >= playerFleet.size()) {
             return;
@@ -224,6 +261,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Checks if a coordinate is valid for ship preview.
+     *
+     * @param coord The coordinate to validate
+     * @return true if the coordinate is within bounds and has no ship, false otherwise
+     */
     private boolean isValidPreviewCoordinate(Coordinate coord) {
         if (coord.getX() < 0 || coord.getX() >= 10 || coord.getY() < 0 || coord.getY() >= 10) {
             return false;
@@ -231,6 +274,9 @@ public class GameController {
         return !gameManager.getHumanPlayer().getBoard().hasShipAt(coord);
     }
 
+    /**
+     * Clears all ship placement previews from the board.
+     */
     private void clearShipPreview() {
         for (Coordinate coord : previewCoordinates) {
             CellView cell = playerBoard.getCell(coord);
@@ -241,6 +287,12 @@ public class GameController {
         previewCoordinates.clear();
     }
 
+    /**
+     * Handles cell click during ship placement mode.
+     * Attempts to place the current ship at the clicked coordinate.
+     *
+     * @param coordinate The coordinate where the user clicked
+     */
     private void handleCellClickPlacement(Coordinate coordinate) {
         if (currentShipIndex >= playerFleet.size()) {
             return;
@@ -270,6 +322,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles the rotation button click.
+     * Toggles ship orientation between horizontal and vertical.
+     */
     private void handleRotate() {
         if (!placementMode) return;
 
@@ -281,12 +337,22 @@ public class GameController {
         clearShipPreview();
     }
 
+    /**
+     * Handles keyboard input for ship rotation.
+     * Pressing 'R' rotates the ship during placement mode.
+     *
+     * @param event The keyboard event
+     */
     public void handleKeyPress(KeyEvent event) {
         if (event.getCode() == KeyCode.R && placementMode) {
             handleRotate();
         }
     }
 
+    /**
+     * Handles the start game button click.
+     * Transitions from placement mode to game mode and saves the game state.
+     */
     private void handleStartGame() {
         placementMode = false;
         clearShipPreview();
@@ -312,6 +378,10 @@ public class GameController {
         setupGameMode();
     }
 
+    /**
+     * Sets up the game mode after ship placement.
+     * Configures cell click handlers for shooting on the enemy board.
+     */
     private void setupGameMode() {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
@@ -323,6 +393,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles cell click during game mode (shooting phase).
+     * Processes the player's shot and updates the board accordingly.
+     *
+     * @param coordinate The coordinate where the player shot
+     */
     private void handleCellClickGame(Coordinate coordinate) {
         if (!gameManager.isPlayerTurn() || gameManager.hasWinner()) {
             return;
@@ -359,6 +435,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Processes the computer's turn.
+     * Displays animations and updates the board based on the computer's shot result.
+     */
     private void processComputerTurn() {
         if (gameManager.hasWinner()) {
             return;
@@ -406,12 +486,25 @@ public class GameController {
         pauseComputer.play();
     }
 
+    /**
+     * Converts a coordinate to alphanumeric notation (e.g., A1, B5).
+     *
+     * @param coord The coordinate to convert
+     * @return The alphanumeric representation
+     */
     private String coordToString(Coordinate coord) {
         char letter = (char) ('A' + coord.getY());
         int number = coord.getX() + 1;
         return letter + "" + number;
     }
 
+    /**
+     * Marks all coordinates of a sunk ship on the board.
+     *
+     * @param board The board containing the ship
+     * @param hitCoord The coordinate that was hit
+     * @param boardView The visual board to update
+     */
     private void markSunkShipOnBoard(com.example.miniproyecto4.model.Board.IBoard board, Coordinate hitCoord, BoardView boardView) {
         IShip ship = board.getShipAt(hitCoord);
         if (ship != null && ship.isSunk()) {
@@ -421,6 +514,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Shows all enemy ships on the board (for debugging/cheating).
+     * Triggered by the "Show Enemy Board" button.
+     */
     private void handleShowEnemyBoard() {
         for (IShip ship : gameManager.getComputerPlayer().getBoard().getShips()) {
             for (Coordinate coord : ship.getCoordinates()) {
@@ -432,11 +529,17 @@ public class GameController {
         }
     }
 
+    /**
+     * Updates the label showing how many ships remain to be placed.
+     */
     private void updateShipsRemaining() {
         int remaining = playerFleet.size() - currentShipIndex;
         shipsRemainingLabel.setText("Barcos restantes: " + remaining);
     }
 
+    /**
+     * Updates the label showing the current ship being placed.
+     */
     private void updateCurrentShipLabel() {
         if (currentShipIndex < playerFleet.size()) {
             IShip ship = playerFleet.get(currentShipIndex);
@@ -446,6 +549,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Updates the label showing the player's remaining ships.
+     */
     private void updatePlayerShips() {
         int total = gameManager.getHumanPlayer().getBoard().getShips().size();
         int sunk = gameManager.getHumanPlayer().getBoard().getSunkShipsCount();
@@ -453,6 +559,9 @@ public class GameController {
         playerShipsLabel.setText("Tus barcos: " + remaining);
     }
 
+    /**
+     * Updates the label showing the enemy's remaining ships.
+     */
     private void updateEnemyShips() {
         int total = gameManager.getComputerPlayer().getBoard().getShips().size();
         int sunk = gameManager.getComputerPlayer().getBoard().getSunkShipsCount();
@@ -460,6 +569,9 @@ public class GameController {
         enemyShipsLabel.setText("Barcos enemigos: " + remaining);
     }
 
+    /**
+     * Shows the win screen and closes the game window.
+     */
     private void showWinScreen() {
         WinView winView = new WinView();
         winView.show();
@@ -468,6 +580,9 @@ public class GameController {
         stage.close();
     }
 
+    /**
+     * Shows the lose screen and closes the game window.
+     */
     private void showLoseScreen() {
         Lose loseView = new Lose();
         loseView.show();

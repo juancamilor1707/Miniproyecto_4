@@ -1,29 +1,45 @@
 package com.example.miniproyecto4.model.Game;
 
-import com.example.miniproyecto4.model.Ship.ShipType;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents the default fleet configuration used in the game.
+ * This class defines the number of ships per type and provides
+ * access to an unmodifiable view of the fleet composition.
+ */
 public class FleetConfiguration {
 
-    private static final Map<ShipType, Integer> FLEET_COMPOSITION = new HashMap<>();
+    /**
+     * Internal mapping that stores the number of ships for each ship type.
+     */
+    private static final Map<String, Integer> FLEET_COMPOSITION = new HashMap<>();
 
     static {
-        FLEET_COMPOSITION.put(ShipType.CARRIER, 1);
-        FLEET_COMPOSITION.put(ShipType.SUBMARINE, 2);
-        FLEET_COMPOSITION.put(ShipType.DESTROYER, 3);
-        FLEET_COMPOSITION.put(ShipType.FRIGATE, 4);
+        FLEET_COMPOSITION.put("Carrier", 1);
+        FLEET_COMPOSITION.put("Battleship", 1);
+        FLEET_COMPOSITION.put("Cruiser", 1);
+        FLEET_COMPOSITION.put("Submarine", 1);
+        FLEET_COMPOSITION.put("Destroyer", 1);
     }
 
-    public static int getTotalShipsCount() {
-        return FLEET_COMPOSITION.values().stream().mapToInt(Integer::intValue).sum();
+    /**
+     * Returns an unmodifiable view of the predefined fleet composition.
+     *
+     * @return a map representing the number of ships per type
+     */
+    public static Map<String, Integer> getFleetComposition() {
+        return Collections.unmodifiableMap(FLEET_COMPOSITION);
     }
 
-    public static int getShipCount(ShipType type) {
-        return FLEET_COMPOSITION.getOrDefault(type, 0);
-    }
-
-    public static Map<ShipType, Integer> getFleetComposition() {
+    /**
+     * Returns a mutable copy of the predefined fleet composition.
+     * Useful when the caller needs to modify the returned map.
+     *
+     * @return a new modifiable map with the fleet configuration
+     */
+    public static Map<String, Integer> getMutableFleetComposition() {
         return new HashMap<>(FLEET_COMPOSITION);
     }
 }

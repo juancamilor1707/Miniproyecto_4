@@ -9,6 +9,10 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import java.io.File;
 
+/**
+ * Controller for the win screen.
+ * Displays game statistics and provides options to start a new game or return to the menu.
+ */
 public class WinController {
 
     @FXML
@@ -22,6 +26,10 @@ public class WinController {
 
     private GameManager gameManager;
 
+    /**
+     * Initializes the controller after FXML injection.
+     * Displays game statistics, deletes the saved game, and configures button actions.
+     */
     @FXML
     public void initialize() {
         gameManager = GameManager.getInstance();
@@ -37,6 +45,9 @@ public class WinController {
         menuButton.setOnAction(e -> handleMenu());
     }
 
+    /**
+     * Deletes the saved game files after a win.
+     */
     private void deleteSavedGame() {
         File saveFile = new File("battleship_save.ser");
         if (saveFile.exists()) {
@@ -48,6 +59,10 @@ public class WinController {
         }
     }
 
+    /**
+     * Handles the new game button click.
+     * Resets the game and opens the game view.
+     */
     private void handleNewGame() {
         gameManager.resetGame();
 
@@ -58,6 +73,10 @@ public class WinController {
         stage.close();
     }
 
+    /**
+     * Handles the menu button click.
+     * Returns to the main menu.
+     */
     private void handleMenu() {
         Menu menuView = new Menu();
         menuView.show();
