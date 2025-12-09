@@ -10,20 +10,37 @@ import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the ShipPlacementValidator class.
+ * Tests validation methods for ship placement including bounds checking,
+ * overlap detection, and overall placement validation.
+ */
 @DisplayName("ShipPlacementValidator Unit Tests")
 class ShipPlacementValidatorTest {
 
+    /**
+     * The validator instance used for testing ship placement rules.
+     */
     private ShipPlacementValidator validator;
+
+    /**
+     * The game board used for testing placement validation.
+     */
     private Board board;
 
+    /**
+     * Sets up the test environment before each test.
+     * Initializes a new validator and a 10x10 board.
+     */
     @BeforeEach
     void setUp() {
         validator = new ShipPlacementValidator();
         board = new Board(10);
     }
 
-    // Tests para validate()
-
+    /**
+     * Tests that validate returns false when board is null.
+     */
     @Test
     @DisplayName("validate con board null debe retornar false")
     void testValidate_NullBoard() {
@@ -31,18 +48,27 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.validate(null, ship));
     }
 
+    /**
+     * Tests that validate returns false when ship is null.
+     */
     @Test
     @DisplayName("validate con ship null debe retornar false")
     void testValidate_NullShip() {
         assertFalse(validator.validate(board, null));
     }
 
+    /**
+     * Tests that validate returns false when both board and ship are null.
+     */
     @Test
     @DisplayName("validate con ambos null debe retornar false")
     void testValidate_BothNull() {
         assertFalse(validator.validate(null, null));
     }
 
+    /**
+     * Tests that validate returns false when ship has no start coordinate.
+     */
     @Test
     @DisplayName("validate con ship sin coordenada inicial debe retornar false")
     void testValidate_NoStartCoordinate() {
@@ -50,6 +76,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.validate(board, ship));
     }
 
+    /**
+     * Tests that validate returns true for valid ship placement.
+     */
     @Test
     @DisplayName("validate con colocación válida debe retornar true")
     void testValidate_ValidPlacement() {
@@ -57,6 +86,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.validate(board, ship));
     }
 
+    /**
+     * Tests that validate returns false when ship extends beyond boundaries.
+     */
     @Test
     @DisplayName("validate con barco fuera de límites debe retornar false")
     void testValidate_OutOfBounds() {
@@ -64,6 +96,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.validate(board, ship));
     }
 
+    /**
+     * Tests that validate returns false when ship overlaps with existing ship.
+     */
     @Test
     @DisplayName("validate con superposición debe retornar false")
     void testValidate_Overlap() {
@@ -74,6 +109,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.validate(board, ship2));
     }
 
+    /**
+     * Tests that validate returns true for adjacent ships without overlap.
+     */
     @Test
     @DisplayName("validate con barcos adyacentes sin superposición debe retornar true")
     void testValidate_AdjacentShips() {
@@ -84,8 +122,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.validate(board, ship2));
     }
 
-    // Tests para isWithinBounds()
-
+    /**
+     * Tests that isWithinBounds returns true when all coordinates are within boundaries.
+     */
     @Test
     @DisplayName("isWithinBounds con todas las coordenadas dentro de límites debe retornar true")
     void testIsWithinBounds_AllInside() {
@@ -93,6 +132,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.isWithinBounds(board, ship));
     }
 
+    /**
+     * Tests that isWithinBounds returns false when horizontal placement exceeds boundaries.
+     */
     @Test
     @DisplayName("isWithinBounds con coordenada horizontal fuera de límites debe retornar false")
     void testIsWithinBounds_HorizontalOutOfBounds() {
@@ -100,6 +142,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.isWithinBounds(board, ship));
     }
 
+    /**
+     * Tests that isWithinBounds returns false when vertical placement exceeds boundaries.
+     */
     @Test
     @DisplayName("isWithinBounds con coordenada vertical fuera de límites debe retornar false")
     void testIsWithinBounds_VerticalOutOfBounds() {
@@ -107,6 +152,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.isWithinBounds(board, ship));
     }
 
+    /**
+     * Tests that isWithinBounds returns false for negative coordinates.
+     */
     @Test
     @DisplayName("isWithinBounds con coordenada negativa debe retornar false")
     void testIsWithinBounds_NegativeCoordinate() {
@@ -114,6 +162,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.isWithinBounds(board, ship));
     }
 
+    /**
+     * Tests that isWithinBounds returns true for placement at top-left corner.
+     */
     @Test
     @DisplayName("isWithinBounds en esquina superior izquierda debe retornar true")
     void testIsWithinBounds_TopLeftCorner() {
@@ -121,6 +172,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.isWithinBounds(board, ship));
     }
 
+    /**
+     * Tests that isWithinBounds returns true for placement at bottom-right corner.
+     */
     @Test
     @DisplayName("isWithinBounds en esquina inferior derecha debe retornar true")
     void testIsWithinBounds_BottomRightCorner() {
@@ -128,8 +182,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.isWithinBounds(board, ship));
     }
 
-    // Tests para hasNoOverlap()
-
+    /**
+     * Tests that hasNoOverlap returns true on an empty board.
+     */
     @Test
     @DisplayName("hasNoOverlap sin barcos en el tablero debe retornar true")
     void testHasNoOverlap_EmptyBoard() {
@@ -137,6 +192,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.hasNoOverlap(board, ship));
     }
 
+    /**
+     * Tests that hasNoOverlap returns false when overlapping at first coordinate.
+     */
     @Test
     @DisplayName("hasNoOverlap con superposición en primera coordenada debe retornar false")
     void testHasNoOverlap_OverlapFirstCoordinate() {
@@ -147,6 +205,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.hasNoOverlap(board, ship2));
     }
 
+    /**
+     * Tests that hasNoOverlap returns false when overlapping at last coordinate.
+     */
     @Test
     @DisplayName("hasNoOverlap con superposición en última coordenada debe retornar false")
     void testHasNoOverlap_OverlapLastCoordinate() {
@@ -157,6 +218,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.hasNoOverlap(board, ship2));
     }
 
+    /**
+     * Tests that hasNoOverlap returns false when ships partially overlap.
+     */
     @Test
     @DisplayName("hasNoOverlap con superposición parcial debe retornar false")
     void testHasNoOverlap_PartialOverlap() {
@@ -167,6 +231,9 @@ class ShipPlacementValidatorTest {
         assertFalse(validator.hasNoOverlap(board, ship2));
     }
 
+    /**
+     * Tests that hasNoOverlap returns true for adjacent ships without overlap.
+     */
     @Test
     @DisplayName("hasNoOverlap con barcos adyacentes debe retornar true")
     void testHasNoOverlap_AdjacentShips() {
@@ -177,6 +244,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.hasNoOverlap(board, ship2));
     }
 
+    /**
+     * Tests that hasNoOverlap returns true for diagonally placed ships.
+     */
     @Test
     @DisplayName("hasNoOverlap con barcos en diagonal debe retornar true")
     void testHasNoOverlap_DiagonalShips() {
@@ -187,6 +257,9 @@ class ShipPlacementValidatorTest {
         assertTrue(validator.hasNoOverlap(board, ship2));
     }
 
+    /**
+     * Tests that hasNoOverlap returns true for multiple ships without any overlap.
+     */
     @Test
     @DisplayName("hasNoOverlap con múltiples barcos sin superposición debe retornar true")
     void testHasNoOverlap_MultipleShipsNoOverlap() {

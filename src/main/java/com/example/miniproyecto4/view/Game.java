@@ -11,21 +11,45 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * Vista principal del juego de Batalla Naval.
- * Gestiona la creación de la ventana, los tableros visuales y la conexión con el controlador.
+ * Main game view for the Battleship game.
+ * Manages the creation of the game window, visual boards, and controller connection.
+ * Extends Stage to create the primary game window.
  */
 public class Game extends Stage {
 
+    /**
+     * The root node of the FXML layout.
+     */
     private Parent root;
+
+    /**
+     * Container for the player's board visualization.
+     */
     private VBox playerBoardContainer;
+
+    /**
+     * Container for the enemy's board visualization.
+     */
     private VBox enemyBoardContainer;
+
+    /**
+     * Visual representation of the player's game board.
+     */
     private BoardView playerBoard;
+
+    /**
+     * Visual representation of the enemy's game board.
+     */
     private BoardView enemyBoard;
+
+    /**
+     * Controller that manages game logic and user interactions.
+     */
     private GameController controller;
 
     /**
-     * Constructor de la vista del juego.
-     * Inicializa todos los componentes necesarios y configura la ventana.
+     * Constructs the game view.
+     * Initializes all necessary components and configures the window.
      */
     public Game() {
         loadFXML();
@@ -34,7 +58,8 @@ public class Game extends Stage {
     }
 
     /**
-     * Carga el archivo FXML y obtiene las referencias a los contenedores.
+     * Loads the FXML file and obtains references to the containers.
+     * Initializes the controller and board container references.
      */
     private void loadFXML() {
         try {
@@ -51,7 +76,8 @@ public class Game extends Stage {
     }
 
     /**
-     * Inicializa los tableros visuales y los conecta con el controlador.
+     * Initializes the visual boards and connects them with the controller.
+     * Creates BoardView instances for both player and enemy boards.
      */
     private void initializeBoards() {
         playerBoard = new BoardView(10, 40);
@@ -71,12 +97,13 @@ public class Game extends Stage {
     }
 
     /**
-     * Configura la ventana del juego con el tamaño y los manejadores de eventos.
+     * Configures the game window with size and event handlers.
+     * Sets up keyboard event handling for game controls.
      */
     private void configureStage() {
         Scene scene = new Scene(root, 1200, 800);
 
-        // Agregar manejador de eventos de teclado para la tecla R
+        // Add keyboard event handler for R key
         scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (controller != null) {
                 controller.handleKeyPress(event);
@@ -85,28 +112,31 @@ public class Game extends Stage {
 
         setScene(scene);
         setTitle("Batalla Naval");
-        setResizable(false); // Opcional: evitar que se redimensione la ventana
+        setResizable(false);
     }
 
     /**
-     * Obtiene el root de la vista.
-     * @return El nodo raíz de la vista
+     * Returns the root node of the view.
+     *
+     * @return the root Parent node
      */
     public Parent getRoot() {
         return root;
     }
 
     /**
-     * Obtiene el tablero visual del jugador.
-     * @return El BoardView del jugador
+     * Returns the player's visual board.
+     *
+     * @return the player's BoardView
      */
     public BoardView getPlayerBoard() {
         return playerBoard;
     }
 
     /**
-     * Obtiene el tablero visual del enemigo.
-     * @return El BoardView del enemigo
+     * Returns the enemy's visual board.
+     *
+     * @return the enemy's BoardView
      */
     public BoardView getEnemyBoard() {
         return enemyBoard;

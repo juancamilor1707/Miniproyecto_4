@@ -9,6 +9,10 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import java.io.File;
 
+/**
+ * Controller for the lose screen.
+ * Displays game statistics after a loss and provides options to start a new game or return to the menu.
+ */
 public class LoseController {
 
     @FXML
@@ -22,6 +26,10 @@ public class LoseController {
 
     private GameManager gameManager;
 
+    /**
+     * Initializes the controller after FXML injection.
+     * Displays defeat statistics, deletes the saved game, and configures button actions.
+     */
     @FXML
     public void initialize() {
         gameManager = GameManager.getInstance();
@@ -36,6 +44,9 @@ public class LoseController {
         menuButton.setOnAction(e -> handleMenu());
     }
 
+    /**
+     * Deletes the saved game files after a loss.
+     */
     private void deleteSavedGame() {
         File saveFile = new File("battleship_save.ser");
         if (saveFile.exists()) {
@@ -47,6 +58,10 @@ public class LoseController {
         }
     }
 
+    /**
+     * Handles the new game button click.
+     * Resets the game and opens the game view.
+     */
     private void handleNewGame() {
         gameManager.resetGame();
 
@@ -57,6 +72,10 @@ public class LoseController {
         stage.close();
     }
 
+    /**
+     * Handles the menu button click.
+     * Returns to the main menu.
+     */
     private void handleMenu() {
         Menu menuView = new Menu();
         menuView.show();

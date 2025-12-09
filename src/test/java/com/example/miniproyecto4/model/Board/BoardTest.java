@@ -12,24 +12,40 @@ import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the Board class.
+ * Tests all board operations including ship placement, removal, validation,
+ * and state management.
+ */
 @DisplayName("Board Unit Tests")
 class BoardTest {
 
+    /**
+     * The game board instance used for testing.
+     */
     private Board board;
 
+    /**
+     * Sets up the test environment before each test.
+     * Initializes a new board with default size.
+     */
     @BeforeEach
     void setUp() {
         board = new Board();
     }
 
-    // Tests para constructores
-
+    /**
+     * Tests that the default constructor creates a board of size 10.
+     */
     @Test
     @DisplayName("Constructor por defecto debe crear tablero de tamaño 10")
     void testDefaultConstructor() {
         assertEquals(10, board.getSize());
     }
 
+    /**
+     * Tests that the constructor with size parameter creates a board of the specified size.
+     */
     @Test
     @DisplayName("Constructor con tamaño debe crear tablero del tamaño especificado")
     void testConstructorWithSize() {
@@ -37,8 +53,9 @@ class BoardTest {
         assertEquals(15, customBoard.getSize());
     }
 
-    // Tests para getSize()
-
+    /**
+     * Tests that getSize returns the correct board size.
+     */
     @Test
     @DisplayName("getSize debe retornar el tamaño correcto")
     void testGetSize() {
@@ -46,8 +63,9 @@ class BoardTest {
         assertEquals(5, board5.getSize());
     }
 
-    // Tests para getCell()
-
+    /**
+     * Tests that getCell returns a cell for valid coordinates.
+     */
     @Test
     @DisplayName("getCell con coordenadas válidas debe retornar celda")
     void testGetCell_ValidCoordinates() {
@@ -57,6 +75,9 @@ class BoardTest {
         assertEquals(5, cell.getCoordinate().getY());
     }
 
+    /**
+     * Tests that getCell returns null for invalid coordinates.
+     */
     @Test
     @DisplayName("getCell con coordenadas inválidas debe retornar null")
     void testGetCell_InvalidCoordinates() {
@@ -66,6 +87,9 @@ class BoardTest {
         assertNull(board.getCell(5, 10));
     }
 
+    /**
+     * Tests that getCell with Coordinate object returns the correct cell.
+     */
     @Test
     @DisplayName("getCell con Coordinate válida debe retornar celda")
     void testGetCell_WithCoordinate() {
@@ -75,6 +99,9 @@ class BoardTest {
         assertEquals(coord, cell.getCoordinate());
     }
 
+    /**
+     * Tests that all cells are initialized with EMPTY status.
+     */
     @Test
     @DisplayName("Todas las celdas deben inicializarse como EMPTY")
     void testInitialCellStatus() {
@@ -86,14 +113,18 @@ class BoardTest {
         }
     }
 
-    // Tests para placeShip()
-
+    /**
+     * Tests that placeShip returns false for null ship.
+     */
     @Test
     @DisplayName("placeShip con ship null debe retornar false")
     void testPlaceShip_NullShip() {
         assertFalse(board.placeShip(null));
     }
 
+    /**
+     * Tests that placeShip returns false when ship has no start coordinate.
+     */
     @Test
     @DisplayName("placeShip con barco sin coordenada inicial debe retornar false")
     void testPlaceShip_NoStartCoordinate() {
@@ -101,6 +132,9 @@ class BoardTest {
         assertFalse(board.placeShip(ship));
     }
 
+    /**
+     * Tests that placeShip returns true for valid ship placement.
+     */
     @Test
     @DisplayName("placeShip con barco válido debe retornar true")
     void testPlaceShip_ValidShip() {
@@ -108,6 +142,9 @@ class BoardTest {
         assertTrue(board.placeShip(ship));
     }
 
+    /**
+     * Tests that placeShip updates cell status to SHIP.
+     */
     @Test
     @DisplayName("placeShip debe cambiar el estado de las celdas a SHIP")
     void testPlaceShip_UpdatesCellStatus() {
@@ -118,6 +155,9 @@ class BoardTest {
         assertEquals(CellStatus.SHIP, board.getCell(3, 2).getStatus());
     }
 
+    /**
+     * Tests that placeShip adds the ship to the ships list.
+     */
     @Test
     @DisplayName("placeShip debe agregar el barco a la lista de barcos")
     void testPlaceShip_AddsToShipsList() {
@@ -128,6 +168,9 @@ class BoardTest {
         assertTrue(board.getShips().contains(ship));
     }
 
+    /**
+     * Tests that placeShip returns false when ship extends beyond boundaries.
+     */
     @Test
     @DisplayName("placeShip con barco fuera de límites debe retornar false")
     void testPlaceShip_OutOfBounds() {
@@ -135,6 +178,9 @@ class BoardTest {
         assertFalse(board.placeShip(ship));
     }
 
+    /**
+     * Tests that placeShip returns false when ship overlaps with existing ship.
+     */
     @Test
     @DisplayName("placeShip con superposición debe retornar false")
     void testPlaceShip_Overlap() {
@@ -145,8 +191,9 @@ class BoardTest {
         assertFalse(board.placeShip(ship2));
     }
 
-    // Tests para removeShip()
-
+    /**
+     * Tests that removeShip returns false for non-existent ship.
+     */
     @Test
     @DisplayName("removeShip con barco no existente debe retornar false")
     void testRemoveShip_NonExistentShip() {
@@ -154,6 +201,9 @@ class BoardTest {
         assertFalse(board.removeShip(ship));
     }
 
+    /**
+     * Tests that removeShip returns true for existing ship.
+     */
     @Test
     @DisplayName("removeShip con barco existente debe retornar true")
     void testRemoveShip_ExistingShip() {
@@ -163,6 +213,9 @@ class BoardTest {
         assertTrue(board.removeShip(ship));
     }
 
+    /**
+     * Tests that removeShip updates cell status to EMPTY.
+     */
     @Test
     @DisplayName("removeShip debe cambiar el estado de las celdas a EMPTY")
     void testRemoveShip_UpdatesCellStatus() {
@@ -174,6 +227,9 @@ class BoardTest {
         assertEquals(CellStatus.EMPTY, board.getCell(4, 3).getStatus());
     }
 
+    /**
+     * Tests that removeShip removes the ship from the ships list.
+     */
     @Test
     @DisplayName("removeShip debe eliminar el barco de la lista")
     void testRemoveShip_RemovesFromList() {
@@ -185,14 +241,18 @@ class BoardTest {
         assertFalse(board.getShips().contains(ship));
     }
 
-    // Tests para getShips()
-
+    /**
+     * Tests that getShips returns an empty list for an empty board.
+     */
     @Test
     @DisplayName("getShips en tablero vacío debe retornar lista vacía")
     void testGetShips_EmptyBoard() {
         assertTrue(board.getShips().isEmpty());
     }
 
+    /**
+     * Tests that getShips returns a copy of the ships list, not the original.
+     */
     @Test
     @DisplayName("getShips debe retornar copia de la lista")
     void testGetShips_ReturnsCopy() {
@@ -203,8 +263,9 @@ class BoardTest {
         assertEquals(1, board.getShips().size());
     }
 
-    // Tests para getShipAt()
-
+    /**
+     * Tests that getShipAt returns the correct ship at the coordinate.
+     */
     @Test
     @DisplayName("getShipAt debe retornar el barco en la coordenada")
     void testGetShipAt_WithShip() {
@@ -215,14 +276,18 @@ class BoardTest {
         assertEquals(ship, board.getShipAt(new Coordinate(5, 4)));
     }
 
+    /**
+     * Tests that getShipAt returns null when no ship exists at the coordinate.
+     */
     @Test
     @DisplayName("getShipAt sin barco debe retornar null")
     void testGetShipAt_NoShip() {
         assertNull(board.getShipAt(new Coordinate(7, 7)));
     }
 
-    // Tests para hasShipAt()
-
+    /**
+     * Tests that hasShipAt returns true when a ship exists at the coordinate.
+     */
     @Test
     @DisplayName("hasShipAt debe retornar true si hay barco")
     void testHasShipAt_WithShip() {
@@ -233,14 +298,18 @@ class BoardTest {
         assertTrue(board.hasShipAt(new Coordinate(2, 1)));
     }
 
+    /**
+     * Tests that hasShipAt returns false when no ship exists at the coordinate.
+     */
     @Test
     @DisplayName("hasShipAt debe retornar false si no hay barco")
     void testHasShipAt_NoShip() {
         assertFalse(board.hasShipAt(new Coordinate(5, 5)));
     }
 
-    // Tests para isValidCoordinate()
-
+    /**
+     * Tests that isValidCoordinate returns true for valid coordinates.
+     */
     @Test
     @DisplayName("isValidCoordinate con coordenadas válidas debe retornar true")
     void testIsValidCoordinate_Valid() {
@@ -249,6 +318,9 @@ class BoardTest {
         assertTrue(board.isValidCoordinate(new Coordinate(5, 5)));
     }
 
+    /**
+     * Tests that isValidCoordinate returns false for invalid coordinates.
+     */
     @Test
     @DisplayName("isValidCoordinate con coordenadas inválidas debe retornar false")
     void testIsValidCoordinate_Invalid() {
@@ -258,14 +330,18 @@ class BoardTest {
         assertFalse(board.isValidCoordinate(new Coordinate(0, 10)));
     }
 
-    // Tests para getSunkShipsCount()
-
+    /**
+     * Tests that getSunkShipsCount returns 0 for a board with no ships.
+     */
     @Test
     @DisplayName("getSunkShipsCount en tablero sin barcos debe retornar 0")
     void testGetSunkShipsCount_NoShips() {
         assertEquals(0, board.getSunkShipsCount());
     }
 
+    /**
+     * Tests that getSunkShipsCount returns 0 when no ships are sunk.
+     */
     @Test
     @DisplayName("getSunkShipsCount sin barcos hundidos debe retornar 0")
     void testGetSunkShipsCount_NoSunkShips() {
@@ -275,6 +351,9 @@ class BoardTest {
         assertEquals(0, board.getSunkShipsCount());
     }
 
+    /**
+     * Tests that getSunkShipsCount returns the correct count when ships are sunk.
+     */
     @Test
     @DisplayName("getSunkShipsCount con barcos hundidos debe retornar cantidad correcta")
     void testGetSunkShipsCount_WithSunkShips() {
@@ -292,14 +371,18 @@ class BoardTest {
         assertEquals(2, board.getSunkShipsCount());
     }
 
-    // Tests para allShipsSunk()
-
+    /**
+     * Tests that allShipsSunk returns false for an empty board.
+     */
     @Test
     @DisplayName("allShipsSunk en tablero vacío debe retornar false")
     void testAllShipsSunk_EmptyBoard() {
         assertFalse(board.allShipsSunk());
     }
 
+    /**
+     * Tests that allShipsSunk returns false when not all ships are sunk.
+     */
     @Test
     @DisplayName("allShipsSunk con barcos no hundidos debe retornar false")
     void testAllShipsSunk_NotAllSunk() {
@@ -309,6 +392,9 @@ class BoardTest {
         assertFalse(board.allShipsSunk());
     }
 
+    /**
+     * Tests that allShipsSunk returns true when all ships are sunk.
+     */
     @Test
     @DisplayName("allShipsSunk con todos los barcos hundidos debe retornar true")
     void testAllShipsSunk_AllSunk() {
@@ -324,8 +410,9 @@ class BoardTest {
         assertTrue(board.allShipsSunk());
     }
 
-    // Tests para reset()
-
+    /**
+     * Tests that reset clears all ships from the board.
+     */
     @Test
     @DisplayName("reset debe limpiar todos los barcos")
     void testReset_ClearsShips() {
@@ -337,6 +424,9 @@ class BoardTest {
         assertEquals(0, board.getShips().size());
     }
 
+    /**
+     * Tests that reset resets all cells to EMPTY status.
+     */
     @Test
     @DisplayName("reset debe resetear todas las celdas a EMPTY")
     void testReset_ResetsCells() {
@@ -352,6 +442,9 @@ class BoardTest {
         }
     }
 
+    /**
+     * Tests that reset clears all ship positions.
+     */
     @Test
     @DisplayName("reset debe limpiar posiciones de barcos")
     void testReset_ClearsShipPositions() {
