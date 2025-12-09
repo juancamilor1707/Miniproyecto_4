@@ -84,24 +84,24 @@ This project showcases advanced software engineering principles including:
 <table>
   <tr>
     <td align="center">
-      <img src="./screenshots/menu.png" alt="Main Menu" width="300px"/>
+      <img src="./images/mainMenu.png" alt="Main Menu" width="300px"/>
       <br />
       <b>Main Menu</b>
     </td>
     <td align="center">
-      <img src="./screenshots/victory.png" alt="Victory Screen" width="300px"/>
+      <img src="./images/winMenu.png" alt="Victory Screen" width="300px"/>
       <br />
       <b>Victory Screen</b>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="./screenshots/defeat.png" alt="Defeat Screen" width="300px"/>
+      <img src="./images/LooseMenu.png" alt="Defeat Screen" width="300px"/>
       <br />
       <b>Defeat Screen</b>
     </td>
     <td align="center">
-      <img src="./screenshots/help.png" alt="Help Menu" width="300px"/>
+      <img src="./images/helpMenu.png" alt="Help Menu" width="300px"/>
       <br />
       <b>Help Menu</b>
     </td>
