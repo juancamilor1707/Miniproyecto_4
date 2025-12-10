@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane prefHeight="615.0" prefWidth="630.0" styleClass="endScren" stylesheets="@Css/Styles.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.miniproyecto4.controller.HelpController">
+<Pane prefHeight="615.0" prefWidth="630.0" styleClass="endScreen" stylesheets="@Css/Styles.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.miniproyecto4.controller.HelpController">
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>

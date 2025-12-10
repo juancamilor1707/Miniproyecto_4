@@ -4,6 +4,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
 import java.io.IOException;
 
 /**
@@ -49,7 +51,7 @@ public class Menu extends Stage {
         Scene scene = new Scene(root, 630, 615);
         setResizable(false);
         setScene(scene);
-        setTitle("Batalla Naval - Menú Principal");
+        initStyle(StageStyle.UNDECORATED);
     }
 
     /**

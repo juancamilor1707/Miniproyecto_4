@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
 import java.io.IOException;
 
 /**
@@ -101,7 +103,7 @@ public class Game extends Stage {
      * Sets up keyboard event handling for game controls.
      */
     private void configureStage() {
-        Scene scene = new Scene(root, 1200, 800);
+        Scene scene = new Scene(root, 1400, 1000);
 
         // Add keyboard event handler for R key
         scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -111,7 +113,7 @@ public class Game extends Stage {
         });
 
         setScene(scene);
-        setTitle("Batalla Naval");
+        initStyle(StageStyle.UNDECORATED);
         setResizable(false);
     }
 
