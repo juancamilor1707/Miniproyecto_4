@@ -14,6 +14,7 @@ import com.example.miniproyecto4.view.Menu;
 import com.example.miniproyecto4.view.WinView;
 import com.example.miniproyecto4.view.Components.BoardView;
 import com.example.miniproyecto4.view.Components.CellView;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -25,17 +26,36 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controller for the main game view.
  * Manages the game flow including ship placement, turn-based shooting,
  * board updates, and game state transitions.
+ * Uses multi-threading for AI computations and smooth UI updates.
  */
 public class GameController {
     /**
      * Flag indicating whether the player is currently viewing enemy ships.
      */
     private boolean isSeeingEnemyShips = false;
+
+    /**
+     * Flag to prevent multiple simultaneous computer turns.
+     */
+    private final AtomicBoolean isProcessingComputerTurn = new AtomicBoolean(false);
+
+    /**
+     * Executor service for running AI computations in background threads.
+     */
+    private final ExecutorService aiExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        thread.setName("AI-Worker");
+        return thread;
+    });
 
     /**
      * Label displaying the current game status and turn information.
@@ -191,6 +211,7 @@ public class GameController {
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
+                shutdownExecutor();
                 openMenu();
             }
         } else {
@@ -202,8 +223,25 @@ public class GameController {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 gameManager.saveGame();
+                shutdownExecutor();
                 openMenu();
             }
+        }
+    }
+
+    /**
+     * Shuts down the AI executor service gracefully.
+     * Waits for running tasks to complete before terminating.
+     */
+    private void shutdownExecutor() {
+        aiExecutor.shutdown();
+        try {
+            if (!aiExecutor.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                aiExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            aiExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -250,9 +288,7 @@ public class GameController {
 
         if (!gameManager.isPlayerTurn() && !gameManager.hasWinner()) {
             statusLabel.setText("Turno de la máquina...");
-            javafx.animation.PauseTransition initialDelay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
-            initialDelay.setOnFinished(e -> processComputerTurn());
-            initialDelay.play();
+            scheduleDelayedComputerTurn(1500);
         } else if (gameManager.isPlayerTurn()) {
             statusLabel.setText("Tu turno - Selecciona una celda para disparar");
         }
@@ -533,9 +569,7 @@ public class GameController {
                 enemyBoard.markMiss(coordinate);
                 statusLabel.setText("¡Agua! Turno de la máquina");
                 updateEnemyShips();
-                javafx.animation.PauseTransition pauseWater = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(0.5));
-                pauseWater.setOnFinished(e -> processComputerTurn());
-                pauseWater.play();
+                scheduleDelayedComputerTurn(500);
                 break;
             case HIT:
                 enemyBoard.markHit(coordinate);
@@ -558,54 +592,98 @@ public class GameController {
     }
 
     /**
-     * Processes the computer's turn with AI logic.
+     * Schedules a delayed computer turn execution.
+     * Uses a separate thread to avoid blocking the UI.
+     *
+     * @param delayMillis delay in milliseconds before executing the turn
+     */
+    private void scheduleDelayedComputerTurn(long delayMillis) {
+        aiExecutor.submit(() -> {
+            try {
+                Thread.sleep(delayMillis);
+                Platform.runLater(this::processComputerTurn);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+    }
+
+    /**
+     * Processes the computer's turn with AI logic in a background thread.
      * Handles shot selection, result processing, and turn continuation.
+     * Uses thread-safe mechanisms to prevent concurrent execution issues.
      */
     private void processComputerTurn() {
-        if (gameManager.hasWinner()) {
+        if (gameManager.hasWinner() || !isProcessingComputerTurn.compareAndSet(false, true)) {
             return;
         }
 
-        statusLabel.setText("Turno de la máquina...");
+        Platform.runLater(() -> statusLabel.setText("Turno de la máquina..."));
 
-        javafx.animation.PauseTransition pauseComputer = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
-        pauseComputer.setOnFinished(e -> {
-            ShotResult result = gameManager.processComputerShot();
-            Coordinate lastShot = gameManager.getLastComputerShot();
+        aiExecutor.submit(() -> {
+            try {
+                // Simulate thinking time for more realistic AI behavior
+                Thread.sleep(800 + (long)(Math.random() * 400));
 
-            if (lastShot == null) {
-                return;
-            }
+                // Process shot in background
+                final ShotResult result = gameManager.processComputerShot();
+                final Coordinate lastShot = gameManager.getLastComputerShot();
 
-            switch (result) {
-                case WATER:
-                    playerBoard.markMiss(lastShot);
-                    statusLabel.setText("La máquina falló en " + coordToString(lastShot) + " - Tu turno");
-                    updatePlayerShips();
-                    break;
-                case HIT:
-                    playerBoard.markHit(lastShot);
-                    statusLabel.setText("¡La máquina te tocó en " + coordToString(lastShot) + "!");
-                    updatePlayerShips();
-                    javafx.animation.PauseTransition pauseHit = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
-                    pauseHit.setOnFinished(ev -> processComputerTurn());
-                    pauseHit.play();
-                    break;
-                case SUNK:
-                    markSunkShipOnBoard(gameManager.getHumanPlayer().getBoard(), lastShot, playerBoard);
-                    updatePlayerShips();
-                    if (gameManager.hasWinner()) {
-                        showLoseScreen();
-                    } else {
-                        statusLabel.setText("¡Te hundieron un barco en " + coordToString(lastShot) + "!");
-                        javafx.animation.PauseTransition pauseSunk = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
-                        pauseSunk.setOnFinished(ev -> processComputerTurn());
-                        pauseSunk.play();
+                if (lastShot == null) {
+                    isProcessingComputerTurn.set(false);
+                    return;
+                }
+
+                // Update UI on JavaFX thread
+                Platform.runLater(() -> {
+                    try {
+                        handleComputerShotResult(result, lastShot);
+                    } finally {
+                        isProcessingComputerTurn.set(false);
                     }
-                    break;
+                });
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                isProcessingComputerTurn.set(false);
+            } catch (Exception e) {
+                e.printStackTrace();
+                isProcessingComputerTurn.set(false);
             }
         });
-        pauseComputer.play();
+    }
+
+    /**
+     * Handles the result of a computer shot and updates the UI accordingly.
+     * Schedules continuation of computer's turn if necessary.
+     *
+     * @param result the result of the shot (WATER, HIT, or SUNK)
+     * @param lastShot the coordinate where the computer shot
+     */
+    private void handleComputerShotResult(ShotResult result, Coordinate lastShot) {
+        switch (result) {
+            case WATER:
+                playerBoard.markMiss(lastShot);
+                statusLabel.setText("La máquina falló en " + coordToString(lastShot) + " - Tu turno");
+                updatePlayerShips();
+                break;
+            case HIT:
+                playerBoard.markHit(lastShot);
+                statusLabel.setText("¡La máquina te tocó en " + coordToString(lastShot) + "!");
+                updatePlayerShips();
+                scheduleDelayedComputerTurn(1000);
+                break;
+            case SUNK:
+                markSunkShipOnBoard(gameManager.getHumanPlayer().getBoard(), lastShot, playerBoard);
+                updatePlayerShips();
+                if (gameManager.hasWinner()) {
+                    showLoseScreen();
+                } else {
+                    statusLabel.setText("¡Te hundieron un barco en " + coordToString(lastShot) + "!");
+                    scheduleDelayedComputerTurn(1500);
+                }
+                break;
+        }
     }
 
     /**
@@ -698,8 +776,10 @@ public class GameController {
 
     /**
      * Shows the victory screen and closes the game window.
+     * Ensures proper cleanup of background threads.
      */
     private void showWinScreen() {
+        shutdownExecutor();
         WinView winView = new WinView();
         winView.show();
 
@@ -709,12 +789,22 @@ public class GameController {
 
     /**
      * Shows the defeat screen and closes the game window.
+     * Ensures proper cleanup of background threads.
      */
     private void showLoseScreen() {
+        shutdownExecutor();
         Lose loseView = new Lose();
         loseView.show();
 
         Stage stage = (Stage) statusLabel.getScene().getWindow();
         stage.close();
+    }
+
+    /**
+     * Cleanup method to be called when the controller is destroyed.
+     * Ensures all background threads are properly terminated.
+     */
+    public void cleanup() {
+        shutdownExecutor();
     }
 }
