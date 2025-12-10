@@ -32,46 +32,115 @@ import java.util.Optional;
  * board updates, and game state transitions.
  */
 public class GameController {
+    /**
+     * Flag indicating whether the player is currently viewing enemy ships.
+     */
+    private boolean isSeeingEnemyShips = false;
 
+    /**
+     * Label displaying the current game status and turn information.
+     */
     @FXML
     private Label statusLabel;
 
+    /**
+     * Label providing instructions to the player.
+     */
     @FXML
     private Label instructionLabel;
 
+    /**
+     * Label showing the number of ships remaining to be placed.
+     */
     @FXML
     private Label shipsRemainingLabel;
 
+    /**
+     * Label displaying information about the current ship being placed.
+     */
     @FXML
     private Label currentShipLabel;
 
+    /**
+     * Label showing the player's remaining ships count.
+     */
     @FXML
     private Label playerShipsLabel;
 
+    /**
+     * Label showing the enemy's remaining ships count.
+     */
     @FXML
     private Label enemyShipsLabel;
 
+    /**
+     * Button to rotate the current ship during placement phase.
+     */
     @FXML
     private Button rotateButton;
 
+    /**
+     * Button to start the game after all ships are placed.
+     */
     @FXML
     private Button startGameButton;
 
+    /**
+     * Button to toggle visibility of enemy ships on the board.
+     */
     @FXML
     private Button showEnemyBoardButton;
 
+    /**
+     * Button to return to the main menu.
+     */
     @FXML
     private Button backToMenuButton;
 
+    /**
+     * The game manager instance controlling game logic and state.
+     */
     private GameManager gameManager;
+
+    /**
+     * Visual representation of the player's board.
+     */
     private BoardView playerBoard;
+
+    /**
+     * Visual representation of the enemy's board.
+     */
     private BoardView enemyBoard;
+
+    /**
+     * List of ships in the player's fleet to be placed.
+     */
     private List<IShip> playerFleet;
+
+    /**
+     * Index of the current ship being placed in the fleet.
+     */
     private int currentShipIndex;
+
+    /**
+     * Current orientation for ship placement (horizontal or vertical).
+     */
     private Orientation currentOrientation;
+
+    /**
+     * Flag indicating whether the game is in ship placement mode.
+     */
     private boolean placementMode;
+
+    /**
+     * List of coordinates currently being previewed for ship placement.
+     */
     private List<Coordinate> previewCoordinates;
 
+    /**
+     * Initializes the controller after FXML injection.
+     * Sets up initial game state, orientation, and event handlers.
+     */
     @FXML
     public void initialize() {
         gameManager = GameManager.getInstance();
@@ -91,6 +160,13 @@ public class GameController {
         }
     }
 
+    /**
+     * Sets the board views for the game.
+     * Loads existing game state if available, otherwise sets up placement mode.
+     *
+     * @param playerBoard the visual representation of the player's board
+     * @param enemyBoard the visual representation of the enemy's board
+     */
     public void setBoards(BoardView playerBoard, BoardView enemyBoard) {
         this.playerBoard = playerBoard;
         this.enemyBoard = enemyBoard;
@@ -102,6 +178,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles the back to menu button click.
+     * Shows confirmation dialogs and saves game if necessary.
+     */
     private void handleBackToMenu() {
         if (placementMode) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -127,6 +207,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Opens the main menu view and closes the current game window.
+     */
     private void openMenu() {
         Menu menuView = new Menu();
         menuView.show();
@@ -135,6 +218,10 @@ public class GameController {
         stage.close();
     }
 
+    /**
+     * Loads a previously saved game state.
+     * Restores board states, updates UI elements, and sets up game mode.
+     */
     private void loadGameState() {
         placementMode = false;
 
@@ -171,14 +258,16 @@ public class GameController {
         }
     }
 
+    /**
+     * Restores the player's board from saved game state.
+     * Redraws ships and marks cells with their correct status (hits, misses, sunk).
+     */
     private void restorePlayerBoard() {
         List<IShip> ships = gameManager.getHumanPlayer().getBoard().getShips();
 
-        // Draw all ships as continuous graphics
         for (IShip ship : ships) {
             playerBoard.drawContinuousShip(ship);
 
-            // Mark hits and sunk cells
             for (Coordinate coord : ship.getCoordinates()) {
                 Cell cell = gameManager.getHumanPlayer().getBoard().getCell(coord);
 
@@ -190,7 +279,6 @@ public class GameController {
             }
         }
 
-        // Restore misses
         int size = gameManager.getHumanPlayer().getBoard().getSize();
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
@@ -204,6 +292,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Restores the enemy's board from saved game state.
+     * Marks cells with their correct status (hits, misses, sunk).
+     */
     private void restoreEnemyBoard() {
         int size = gameManager.getComputerPlayer().getBoard().getSize();
 
@@ -223,6 +315,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Sets up the ship placement mode.
+     * Initializes cell event handlers for ship placement and preview.
+     */
     private void setupPlacementMode() {
         updateShipsRemaining();
         updateCurrentShipLabel();
@@ -244,6 +340,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Shows a preview of the current ship at the specified coordinate.
+     * Displays valid (green) or invalid (red) placement preview.
+     *
+     * @param coordinate the coordinate to preview ship placement at
+     */
     private void showShipPreview(Coordinate coordinate) {
         if (currentShipIndex >= playerFleet.size()) {
             return;
@@ -282,6 +384,13 @@ public class GameController {
         }
     }
 
+    /**
+     * Checks if a coordinate is valid for ship placement preview.
+     * Validates bounds and checks for existing ships.
+     *
+     * @param coord the coordinate to validate
+     * @return true if the coordinate is valid for placement, false otherwise
+     */
     private boolean isValidPreviewCoordinate(Coordinate coord) {
         if (coord.getX() < 0 || coord.getX() >= 10 || coord.getY() < 0 || coord.getY() >= 10) {
             return false;
@@ -289,6 +398,9 @@ public class GameController {
         return !gameManager.getHumanPlayer().getBoard().hasShipAt(coord);
     }
 
+    /**
+     * Clears the current ship placement preview from all cells.
+     */
     private void clearShipPreview() {
         for (Coordinate coord : previewCoordinates) {
             CellView cell = playerBoard.getCell(coord);
@@ -299,6 +411,12 @@ public class GameController {
         previewCoordinates.clear();
     }
 
+    /**
+     * Handles cell click during ship placement phase.
+     * Attempts to place the current ship at the clicked coordinate.
+     *
+     * @param coordinate the coordinate where the player clicked
+     */
     private void handleCellClickPlacement(Coordinate coordinate) {
         if (currentShipIndex >= playerFleet.size()) {
             return;
@@ -310,7 +428,6 @@ public class GameController {
         if (gameManager.getHumanPlayer().getBoard().placeShip(ship)) {
             clearShipPreview();
 
-            // Draw the ship as a continuous graphic
             playerBoard.drawContinuousShip(ship);
 
             currentShipIndex++;
@@ -327,6 +444,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles the rotate button click.
+     * Toggles ship orientation between horizontal and vertical during placement mode.
+     */
     private void handleRotate() {
         if (!placementMode) return;
 
@@ -338,12 +459,22 @@ public class GameController {
         clearShipPreview();
     }
 
+    /**
+     * Handles keyboard input for game controls.
+     * Supports 'R' key for rotating ships during placement.
+     *
+     * @param event the key event
+     */
     public void handleKeyPress(KeyEvent event) {
         if (event.getCode() == KeyCode.R && placementMode) {
             handleRotate();
         }
     }
 
+    /**
+     * Handles the start game button click.
+     * Transitions from placement mode to game mode.
+     */
     private void handleStartGame() {
         placementMode = false;
         clearShipPreview();
@@ -369,6 +500,10 @@ public class GameController {
         setupGameMode();
     }
 
+    /**
+     * Sets up game mode after placement phase.
+     * Configures enemy board cells to accept shot clicks.
+     */
     private void setupGameMode() {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
@@ -380,6 +515,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles cell click during active gameplay.
+     * Processes player shot and triggers appropriate game flow.
+     *
+     * @param coordinate the coordinate where the player shot
+     */
     private void handleCellClickGame(Coordinate coordinate) {
         if (!gameManager.isPlayerTurn() || gameManager.hasWinner()) {
             return;
@@ -416,6 +557,10 @@ public class GameController {
         }
     }
 
+    /**
+     * Processes the computer's turn with AI logic.
+     * Handles shot selection, result processing, and turn continuation.
+     */
     private void processComputerTurn() {
         if (gameManager.hasWinner()) {
             return;
@@ -463,12 +608,25 @@ public class GameController {
         pauseComputer.play();
     }
 
+    /**
+     * Converts a coordinate to alphanumeric string notation (e.g., A1, B5).
+     *
+     * @param coord the coordinate to convert
+     * @return the alphanumeric string representation
+     */
     private String coordToString(Coordinate coord) {
         char letter = (char) ('A' + coord.getY());
         int number = coord.getX() + 1;
         return letter + "" + number;
     }
 
+    /**
+     * Marks all cells of a sunk ship on the specified board view.
+     *
+     * @param board the game board model
+     * @param hitCoord the coordinate where the final hit occurred
+     * @param boardView the visual board to update
+     */
     private void markSunkShipOnBoard(com.example.miniproyecto4.model.Board.IBoard board, Coordinate hitCoord, BoardView boardView) {
         IShip ship = board.getShipAt(hitCoord);
         if (ship != null && ship.isSunk()) {
@@ -478,18 +636,37 @@ public class GameController {
         }
     }
 
+    /**
+     * Toggles the visibility of enemy ships on the board.
+     * Shows ships when false, hides them when true.
+     */
     private void handleShowEnemyBoard() {
-        // Draw all enemy ships as continuous graphics
-        for (IShip ship : gameManager.getComputerPlayer().getBoard().getShips()) {
-            enemyBoard.drawContinuousShip(ship);
+        if (!isSeeingEnemyShips) {
+            for (IShip ship : gameManager.getComputerPlayer().getBoard().getShips()) {
+                enemyBoard.drawContinuousShip(ship);
+            }
+            isSeeingEnemyShips = true;
+            showEnemyBoardButton.setText("Ocultar Barcos Enemigos");
+        } else {
+            for (IShip ship : gameManager.getComputerPlayer().getBoard().getShips()) {
+                enemyBoard.removeShipGraphic(ship);
+            }
+            isSeeingEnemyShips = false;
+            showEnemyBoardButton.setText("Mostrar Barcos Enemigos");
         }
     }
 
+    /**
+     * Updates the ships remaining label during placement phase.
+     */
     private void updateShipsRemaining() {
         int remaining = playerFleet.size() - currentShipIndex;
         shipsRemainingLabel.setText("Barcos restantes: " + remaining);
     }
 
+    /**
+     * Updates the current ship label with ship type, size, and orientation.
+     */
     private void updateCurrentShipLabel() {
         if (currentShipIndex < playerFleet.size()) {
             IShip ship = playerFleet.get(currentShipIndex);
@@ -499,6 +676,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Updates the player's ships count label.
+     */
     private void updatePlayerShips() {
         int total = gameManager.getHumanPlayer().getBoard().getShips().size();
         int sunk = gameManager.getHumanPlayer().getBoard().getSunkShipsCount();
@@ -506,6 +686,9 @@ public class GameController {
         playerShipsLabel.setText("Tus barcos: " + remaining);
     }
 
+    /**
+     * Updates the enemy's ships count label.
+     */
     private void updateEnemyShips() {
         int total = gameManager.getComputerPlayer().getBoard().getShips().size();
         int sunk = gameManager.getComputerPlayer().getBoard().getSunkShipsCount();
@@ -513,6 +696,9 @@ public class GameController {
         enemyShipsLabel.setText("Barcos enemigos: " + remaining);
     }
 
+    /**
+     * Shows the victory screen and closes the game window.
+     */
     private void showWinScreen() {
         WinView winView = new WinView();
         winView.show();
@@ -521,6 +707,9 @@ public class GameController {
         stage.close();
     }
 
+    /**
+     * Shows the defeat screen and closes the game window.
+     */
     private void showLoseScreen() {
         Lose loseView = new Lose();
         loseView.show();

@@ -475,6 +475,12 @@ public class BoardView extends Pane implements IBoardView {
         return carrier;
     }
 
+    /**
+     * Removes the continuous ship graphics from the board.
+     * Clears ship visuals while preserving hits, misses, and sunk states.
+     *
+     * @param ship The ship to remove from visual display
+     */
     public void removeShipGraphic(IShip ship) {
         Group graphic = shipGraphics.get(ship);
         if (graphic != null) {
@@ -550,4 +556,6 @@ public class BoardView extends Pane implements IBoardView {
             }
         }
     }
+
+
 }
