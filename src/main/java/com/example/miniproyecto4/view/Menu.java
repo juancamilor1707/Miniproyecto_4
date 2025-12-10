@@ -47,6 +47,7 @@ public class Menu extends Stage {
      */
     private void configureStage() {
         Scene scene = new Scene(root, 630, 615);
+        setResizable(false);
         setScene(scene);
         setTitle("Batalla Naval - Menú Principal");
     }

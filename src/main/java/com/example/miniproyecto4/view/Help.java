@@ -47,6 +47,7 @@ public class Help extends Stage {
     private void configureStage() {
         Scene scene = new Scene(root, 630, 615);
         setScene(scene);
+        setResizable(false);
         setTitle("Batalla Naval - Ayuda");
     }
 

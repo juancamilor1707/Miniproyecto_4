@@ -12,7 +12,7 @@
     </padding>
    <ImageView fitHeight="615.0" fitWidth="636.0" layoutX="8.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/Reglas.png" />
+         <Image url="@Images/Rules.png" />
       </image>
    </ImageView>
 

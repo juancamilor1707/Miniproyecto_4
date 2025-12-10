@@ -1,61 +1,37 @@
 package com.example.miniproyecto4.model.AI;
 
 import com.example.miniproyecto4.model.Board.IBoard;
+import com.example.miniproyecto4.model.Cell.Cell;
+import com.example.miniproyecto4.model.Cell.CellStatus;
 import com.example.miniproyecto4.model.Cell.Coordinate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * AI strategy implementation using a combination of random and intelligent targeting.
  * Uses a "hunt and target" approach: randomly searches for ships using a checkerboard
  * pattern, then targets adjacent cells when a hit is detected.
+ * Improved to handle edge cases when ships are partially surrounded.
  */
 public class RandomAIStrategy implements IAIStrategy {
 
-    /**
-     * Random number generator for selecting targets.
-     */
     private final Random random;
-
-    /**
-     * List of coordinates that have not yet been targeted.
-     */
     private final List<Coordinate> availableTargets;
-
-    /**
-     * Queue of high-priority targets (adjacent to recent hits).
-     */
     private final List<Coordinate> targetQueue;
+    private final List<Coordinate> currentHitChain;
 
-    /**
-     * The coordinate of the last successful hit.
-     */
-    private Coordinate lastHit;
-
-    /**
-     * Flag indicating whether the AI is in hunt mode (true) or target mode (false).
-     * Hunt mode searches randomly, target mode focuses on adjacent cells.
-     */
+    private Coordinate firstHitInChain;
     private boolean huntMode;
+    private IBoard lastOpponentBoard;
 
-    /**
-     * Constructs a new RandomAIStrategy.
-     * Initializes all available targets on a 10x10 board and sets hunt mode active.
-     */
     public RandomAIStrategy() {
         this.random = new Random();
         this.availableTargets = new ArrayList<>();
         this.targetQueue = new ArrayList<>();
+        this.currentHitChain = new ArrayList<>();
         this.huntMode = true;
         initializeAvailableTargets();
     }
 
-    /**
-     * Initializes the list of all available target coordinates on the board.
-     * Populates with all coordinates in a 10x10 grid.
-     */
     private void initializeAvailableTargets() {
         availableTargets.clear();
         for (int x = 0; x < 10; x++) {
@@ -65,21 +41,15 @@ public class RandomAIStrategy implements IAIStrategy {
         }
     }
 
-    /**
-     * Selects the next target coordinate for shooting.
-     * If in target mode (after a hit), prioritizes adjacent cells from the target queue.
-     * Otherwise, uses hunt mode to select a random checkerboard pattern coordinate.
-     *
-     * @param opponentBoard the opponent's board (not used in this implementation)
-     * @return the selected coordinate, or null if no valid targets remain
-     */
     @Override
     public Coordinate selectTarget(IBoard opponentBoard) {
+        this.lastOpponentBoard = opponentBoard;
 
         if (availableTargets.isEmpty() && targetQueue.isEmpty()) {
             return null;
         }
 
+        // Modo Target: tenemos hits que perseguir
         if (!huntMode && !targetQueue.isEmpty()) {
             Iterator<Coordinate> iterator = targetQueue.iterator();
             while (iterator.hasNext()) {
@@ -90,10 +60,31 @@ public class RandomAIStrategy implements IAIStrategy {
                     return target;
                 }
             }
-            huntMode = true;
         }
 
+        // Si el target queue está vacío pero tenemos hits activos, buscar más opciones
+        if (!huntMode && !currentHitChain.isEmpty()) {
+            Coordinate extended = findExtendedTarget();
+            if (extended != null) {
+                return extended;
+            }
+
+            // Verificar si el barco está hundido
+            if (isChainSunk()) {
+                resetToHuntMode();
+            }
+        }
+
+        // Modo Hunt: búsqueda con patrón de tablero de ajedrez
         if (huntMode && !availableTargets.isEmpty()) {
+            return selectHuntTarget();
+        }
+
+        // Fallback a hunt mode
+        if (!availableTargets.isEmpty()) {
+            huntMode = true;
+            currentHitChain.clear();
+            firstHitInChain = null;
             return selectHuntTarget();
         }
 
@@ -101,19 +92,114 @@ public class RandomAIStrategy implements IAIStrategy {
     }
 
     /**
-     * Selects a target during hunt mode using an efficient checkerboard pattern.
-     * Prioritizes coordinates where (x+y) is even, as ships of size 2+ must occupy
-     * at least one such cell. Falls back to random selection if no checkerboard targets remain.
-     *
-     * @return a randomly selected hunt target, or null if no targets available
+     * Busca un objetivo extendido cuando no hay adyacentes disponibles
      */
+    private Coordinate findExtendedTarget() {
+        if (currentHitChain.size() < 2) {
+            return null;
+        }
+
+        // Determinar la dirección del barco
+        Coordinate first = currentHitChain.get(0);
+        Coordinate second = currentHitChain.get(1);
+
+        int dx = Integer.compare(second.getX() - first.getX(), 0);
+        int dy = Integer.compare(second.getY() - first.getY(), 0);
+
+        if (dx == 0 && dy == 0) {
+            return null;
+        }
+
+        // Intentar extender desde el último hit
+        Coordinate last = currentHitChain.get(currentHitChain.size() - 1);
+        for (int dist = 1; dist <= 2; dist++) {
+            Coordinate extended = new Coordinate(
+                    last.getX() + (dx * dist),
+                    last.getY() + (dy * dist)
+            );
+
+            if (isValidCoordinate(extended) && availableTargets.contains(extended)) {
+                // Verificar que no haya un MISS bloqueando
+                boolean blocked = false;
+                for (int i = 1; i < dist; i++) {
+                    Coordinate intermediate = new Coordinate(
+                            last.getX() + (dx * i),
+                            last.getY() + (dy * i)
+                    );
+                    if (isMiss(intermediate)) {
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (!blocked) {
+                    return extended;
+                }
+            }
+        }
+
+        // Intentar extender desde el primer hit en dirección opuesta
+        for (int dist = 1; dist <= 2; dist++) {
+            Coordinate extended = new Coordinate(
+                    first.getX() - (dx * dist),
+                    first.getY() - (dy * dist)
+            );
+
+            if (isValidCoordinate(extended) && availableTargets.contains(extended)) {
+                boolean blocked = false;
+                for (int i = 1; i < dist; i++) {
+                    Coordinate intermediate = new Coordinate(
+                            first.getX() - (dx * i),
+                            first.getY() - (dy * i)
+                    );
+                    if (isMiss(intermediate)) {
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (!blocked) {
+                    return extended;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Verifica si una coordenada es un MISS
+     */
+    private boolean isMiss(Coordinate coord) {
+        if (lastOpponentBoard == null) {
+            return false;
+        }
+        Cell cell = lastOpponentBoard.getCell(coord);
+        return cell != null && cell.getStatus() == CellStatus.MISS;
+    }
+
+    /**
+     * Verifica si la cadena de hits actual está completamente hundida
+     */
+    private boolean isChainSunk() {
+        if (lastOpponentBoard == null || currentHitChain.isEmpty()) {
+            return false;
+        }
+
+        for (Coordinate hit : currentHitChain) {
+            Cell cell = lastOpponentBoard.getCell(hit);
+            if (cell == null || cell.getStatus() != CellStatus.SUNK) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private Coordinate selectHuntTarget() {
         if (availableTargets.isEmpty()) {
             return null;
         }
 
+        // Priorizar patrón de tablero de ajedrez
         List<Coordinate> checkerboardTargets = new ArrayList<>();
-
         for (Coordinate coord : availableTargets) {
             if ((coord.getX() + coord.getY()) % 2 == 0) {
                 checkerboardTargets.add(coord);
@@ -137,80 +223,79 @@ public class RandomAIStrategy implements IAIStrategy {
         return null;
     }
 
-    /**
-     * Updates the strategy based on the result of the last shot.
-     * If the shot was a hit, switches to target mode and adds adjacent cells to the queue.
-     * If it was a miss and no targets remain in the queue, switches back to hunt mode.
-     *
-     * @param lastShot the coordinate of the last shot taken
-     * @param wasHit true if the shot was a hit, false if it was a miss
-     */
     @Override
     public void updateStrategy(Coordinate lastShot, boolean wasHit) {
         availableTargets.remove(lastShot);
 
         if (wasHit) {
             huntMode = false;
-            lastHit = lastShot;
 
+            // Agregar a la cadena de hits
+            if (firstHitInChain == null) {
+                firstHitInChain = lastShot;
+                currentHitChain.clear();
+            }
+            currentHitChain.add(lastShot);
+
+            // Agregar adyacentes a la cola
             addAdjacentTargets(lastShot);
+
+            // Si ya tenemos 2+ hits, verificar si están hundidos
+            if (currentHitChain.size() >= 2 && isChainSunk()) {
+                resetToHuntMode();
+            }
         } else {
+            // Si erramos y no hay más targets en cola, verificar estado
             if (targetQueue.isEmpty()) {
-                huntMode = true;
-                lastHit = null;
+                if (currentHitChain.isEmpty() || isChainSunk()) {
+                    resetToHuntMode();
+                }
             }
         }
     }
 
-    /**
-     * Adds all valid adjacent coordinates (up, down, left, right) to the target queue.
-     * Only adds coordinates that are within bounds and not already in the queue.
-     *
-     * @param hit the coordinate that was hit
-     */
     private void addAdjacentTargets(Coordinate hit) {
         Coordinate up = new Coordinate(hit.getX(), hit.getY() - 1);
-        if (isValidCoordinate(up) && !targetQueue.contains(up)) {
+        if (isValidCoordinate(up) && !targetQueue.contains(up) && availableTargets.contains(up)) {
             targetQueue.add(up);
         }
 
         Coordinate down = new Coordinate(hit.getX(), hit.getY() + 1);
-        if (isValidCoordinate(down) && !targetQueue.contains(down)) {
+        if (isValidCoordinate(down) && !targetQueue.contains(down) && availableTargets.contains(down)) {
             targetQueue.add(down);
         }
 
         Coordinate left = new Coordinate(hit.getX() - 1, hit.getY());
-        if (isValidCoordinate(left) && !targetQueue.contains(left)) {
+        if (isValidCoordinate(left) && !targetQueue.contains(left) && availableTargets.contains(left)) {
             targetQueue.add(left);
         }
 
         Coordinate right = new Coordinate(hit.getX() + 1, hit.getY());
-        if (isValidCoordinate(right) && !targetQueue.contains(right)) {
+        if (isValidCoordinate(right) && !targetQueue.contains(right) && availableTargets.contains(right)) {
             targetQueue.add(right);
         }
     }
 
-    /**
-     * Checks if a coordinate is within the valid board bounds (0-9 for both x and y).
-     *
-     * @param coord the coordinate to validate
-     * @return true if the coordinate is valid, false otherwise
-     */
     private boolean isValidCoordinate(Coordinate coord) {
         return coord.getX() >= 0 && coord.getX() < 10 &&
                 coord.getY() >= 0 && coord.getY() < 10;
     }
 
-    /**
-     * Resets the strategy to its initial state.
-     * Clears all targets and queues, resets hunt mode, and reinitializes available targets.
-     */
+    private void resetToHuntMode() {
+        huntMode = true;
+        firstHitInChain = null;
+        currentHitChain.clear();
+        targetQueue.clear();
+    }
+
     @Override
     public void reset() {
         availableTargets.clear();
         targetQueue.clear();
-        lastHit = null;
+        currentHitChain.clear();
+        firstHitInChain = null;
         huntMode = true;
+        lastOpponentBoard = null;
         initializeAvailableTargets();
     }
 }

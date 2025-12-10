@@ -14,8 +14,6 @@
 
     <Label fx:id="statsLabel" layoutX="215.0" layoutY="229.0" prefHeight="129.0" prefWidth="200.0" style="-fx-font-size: 20px;" wrapText="true" />
 
-    <Button fx:id="newGameButton" layoutX="255.0" layoutY="345.0" prefWidth="200.0" style="-fx-font-size: 16px;" styleClass="button1" text="Nuevo Juego" />
-
     <Button fx:id="menuButton" layoutX="255.0" layoutY="423.0" prefWidth="200.0" style="-fx-font-size: 16px;" styleClass="button2" text="Menú Principal" />
    <ImageView fitHeight="141.0" fitWidth="450.0" layoutX="104.0" layoutY="43.0" pickOnBounds="true" preserveRatio="true">
       <image>
@@ -24,42 +22,42 @@
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="4.0" layoutY="189.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/PedazoBarco1.png" />
+         <Image url="@Images/BoatPieces.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="479.0" layoutY="464.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/PedazoBarco1.png" />
+         <Image url="@Images/BoatPieces.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="479.0" layoutY="201.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/PedazoBarco2.png" />
+         <Image url="@Images/BoatPieces2.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="21.0" layoutY="415.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/PedazoBarco2.png" />
+         <Image url="@Images/BoatPieces2.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="79.0" layoutY="465.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/Ola1.png" />
+         <Image url="@Images/Wave.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="354.0" layoutY="465.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/ola2.png" />
+         <Image url="@Images/Wave2.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="504.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/Estrella3.png" />
+         <Image url="@Images/star3.png" />
       </image>
    </ImageView>
    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-20.0" layoutY="-16.0" pickOnBounds="true" preserveRatio="true">
       <image>
-         <Image url="@Images/estrella.png" />
+         <Image url="@Images/star.png" />
       </image>
    </ImageView>
 </Pane>
