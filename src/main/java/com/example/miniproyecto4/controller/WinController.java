@@ -41,7 +41,6 @@ public class WinController {
 
         deleteSavedGame();
 
-        newGameButton.setOnAction(e -> handleNewGame());
         menuButton.setOnAction(e -> handleMenu());
     }
 

@@ -40,7 +40,6 @@ public class LoseController {
 
         deleteSavedGame();
 
-        newGameButton.setOnAction(e -> handleNewGame());
         menuButton.setOnAction(e -> handleMenu());
     }
 
