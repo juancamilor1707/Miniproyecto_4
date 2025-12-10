@@ -22,15 +22,15 @@
 <div align="center">
 
 ### Main Game Interface
-![Game Screenshot](./screenshots/game-main.png)
+![Game Screenshot](./images/mainGameInterface.png)
 *Strategic gameplay with dual board view*
 
 ### Ship Placement Phase
-![Ship Placement](./screenshots/ship-placement.png)
+![Ship Placement](./images/shipPlacement.png)
 *Intuitive ship placement with visual preview*
 
 ### Battle in Action
-![Battle Scene](./screenshots/battle-action.png)
+![Battle Scene](./images/battleScene.png)
 *Real-time combat with hit/miss indicators*
 
 </div>
@@ -122,33 +122,6 @@ This project showcases advanced software engineering principles including:
 🛠️ Maven or Gradle (optional)
 ```
 
-### Quick Start
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/battleship-game.git
-cd battleship-game
-```
-
-2. **Build the project**
-```bash
-# Using Maven
-mvn clean install
-
-# Or using Gradle
-gradle build
-```
-
-3. **Run the game**
-```bash
-# Using Maven
-mvn javafx:run
-
-# Or directly with Java
-java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -jar battleship.jar
-```
-
----
 
 ## 🎮 How to Play
 
