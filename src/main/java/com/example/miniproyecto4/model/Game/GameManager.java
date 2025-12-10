@@ -26,16 +26,57 @@ import java.util.Random;
  */
 public class GameManager implements IGameManager {
 
+    /**
+     * Singleton instance of the GameManager.
+     */
     private static GameManager instance;
+
+    /**
+     * The human player participating in the game.
+     */
     private IPlayer humanPlayer;
+
+    /**
+     * The computer-controlled opponent player.
+     */
     private ComputerPlayer computerPlayer;
+
+    /**
+     * Current status of the game (SETUP, PLAYING, PLAYER_WON, COMPUTER_WON).
+     */
     private GameStatus gameStatus;
+
+    /**
+     * Flag indicating whether it is currently the human player's turn.
+     */
     private boolean isPlayerTurn;
+
+    /**
+     * Repository for saving and loading game state.
+     */
     private final IGameRepository repository;
+
+    /**
+     * Strategy used by the AI to determine shot targets.
+     */
     private final IAIStrategy aiStrategy;
+
+    /**
+     * Random number generator for AI ship placement and shot selection.
+     */
     private final Random random;
+
+    /**
+     * The last coordinate where the computer player took a shot.
+     */
     private Coordinate lastComputerShot;
 
+
+    /**
+     * Private constructor to enforce Singleton pattern.
+     * Initializes the game repository, AI strategy, random generator,
+     * and sets initial game state.
+     */
     private GameManager() {
         this.repository = new GameRepository();
         this.aiStrategy = new RandomAIStrategy();
@@ -44,6 +85,12 @@ public class GameManager implements IGameManager {
         this.isPlayerTurn = true;
     }
 
+    /**
+     * Returns the singleton instance of GameManager.
+     * Creates a new instance if one does not exist.
+     *
+     * @return the singleton GameManager instance
+     */
     public static GameManager getInstance() {
         if (instance == null) {
             instance = new GameManager();
@@ -51,6 +98,13 @@ public class GameManager implements IGameManager {
         return instance;
     }
 
+    /**
+     * Starts a new game with the specified player nickname.
+     * Creates new player and computer player instances, places computer ships,
+     * and initializes the game state.
+     *
+     * @param playerNickname the nickname for the human player
+     */
     @Override
     public void startNewGame(String playerNickname) {
         humanPlayer = new Player(playerNickname);
@@ -64,6 +118,10 @@ public class GameManager implements IGameManager {
         aiStrategy.reset();
     }
 
+    /**
+     * Places all ships for the computer player randomly on the board.
+     * Attempts to place each ship up to 1000 times before moving to the next ship.
+     */
     private void placeComputerShips() {
         List<IShip> fleet = ShipFactory.createFleet();
         IBoard board = computerPlayer.getBoard();
@@ -87,6 +145,10 @@ public class GameManager implements IGameManager {
         }
     }
 
+    /**
+     * Loads a previously saved game from the repository.
+     * Restores players, game status, turn information, and updates available shots.
+     */
     @Override
     public void loadGame() {
         SerializableGameData data = repository.loadGame();
@@ -101,6 +163,11 @@ public class GameManager implements IGameManager {
         }
     }
 
+    /**
+     * Updates the computer player's available shots list based on the current
+     * state of the human player's board. Marks cells that have already been
+     * hit or missed as taken.
+     */
     private void updateComputerAvailableShots() {
         IBoard playerBoard = humanPlayer.getBoard();
         int size = playerBoard.getSize();
@@ -117,6 +184,14 @@ public class GameManager implements IGameManager {
         }
     }
 
+
+    /**
+     * Processes a shot from the human player at the specified coordinate.
+     * Updates cell status, ship hit state, and checks for sunk ships and win conditions.
+     *
+     * @param coordinate the target coordinate for the shot
+     * @return the result of the shot (INVALID, WATER, HIT, or SUNK)
+     */
     @Override
     public ShotResult processPlayerShot(Coordinate coordinate) {
         if (!isPlayerTurn || gameStatus != GameStatus.PLAYING) {
@@ -159,6 +234,13 @@ public class GameManager implements IGameManager {
         return ShotResult.HIT;
     }
 
+    /**
+     * Processes a shot from the computer player.
+     * Uses AI strategy to select a target, updates cell status, and checks for
+     * sunk ships and win conditions.
+     *
+     * @return the result of the shot (INVALID, WATER, HIT, or SUNK)
+     */
     @Override
     public ShotResult processComputerShot() {
         if (isPlayerTurn || gameStatus != GameStatus.PLAYING) {
@@ -212,6 +294,12 @@ public class GameManager implements IGameManager {
         return ShotResult.HIT;
     }
 
+    /**
+     * Marks all cells occupied by a sunk ship with SUNK status.
+     *
+     * @param board the board containing the ship
+     * @param ship the ship that has been sunk
+     */
     private void markShipAsSunk(IBoard board, IShip ship) {
         for (Coordinate coord : ship.getCoordinates()) {
             Cell cell = board.getCell(coord);
@@ -221,25 +309,51 @@ public class GameManager implements IGameManager {
         }
     }
 
+    /**
+     * Returns the human player instance.
+     *
+     * @return the human player
+     */
     @Override
     public IPlayer getHumanPlayer() {
         return humanPlayer;
     }
 
+    /**
+     * Returns the last coordinate where the computer player took a shot.
+     *
+     * @return the last computer shot coordinate, or null if no shot has been taken
+     */
     public Coordinate getLastComputerShot() {
         return lastComputerShot;
     }
 
+    /**
+     * Returns the computer player instance.
+     *
+     * @return the computer player
+     */
     @Override
     public IPlayer getComputerPlayer() {
         return computerPlayer;
     }
 
+    /**
+     * Returns the current game status.
+     *
+     * @return the current game status
+     */
     @Override
     public GameStatus getGameStatus() {
         return gameStatus;
     }
 
+    /**
+     * Sets the game status to the specified value.
+     * Only saves the game if the status is set to PLAYING.
+     *
+     * @param status the new game status
+     */
     public void setGameStatus(GameStatus status) {
         this.gameStatus = status;
         if (status == GameStatus.PLAYING) {
@@ -247,16 +361,28 @@ public class GameManager implements IGameManager {
         }
     }
 
+    /**
+     * Checks if it is currently the human player's turn.
+     *
+     * @return true if it is the player's turn, false otherwise
+     */
     @Override
     public boolean isPlayerTurn() {
         return isPlayerTurn;
     }
 
+    /**
+     * Switches the turn between the human player and computer player.
+     */
     @Override
     public void switchTurn() {
         isPlayerTurn = !isPlayerTurn;
     }
 
+    /**
+     * Saves the current game state to the repository.
+     * Only saves if the game status is PLAYING.
+     */
     @Override
     public void saveGame() {
         if (gameStatus == GameStatus.PLAYING) {
@@ -264,11 +390,21 @@ public class GameManager implements IGameManager {
         }
     }
 
+    /**
+     * Checks if the game has a winner.
+     *
+     * @return true if either player or computer has won, false otherwise
+     */
     @Override
     public boolean hasWinner() {
         return gameStatus == GameStatus.PLAYER_WON || gameStatus == GameStatus.COMPUTER_WON;
     }
 
+    /**
+     * Returns the winner of the game.
+     *
+     * @return the winning player, or null if there is no winner yet
+     */
     @Override
     public IPlayer getWinner() {
         if (gameStatus == GameStatus.PLAYER_WON) {
@@ -279,6 +415,10 @@ public class GameManager implements IGameManager {
         return null;
     }
 
+    /**
+     * Resets the game to its initial state.
+     * Resets both players, sets status to SETUP, and reinitializes turn and AI strategy.
+     */
     @Override
     public void resetGame() {
         if (humanPlayer != null) {

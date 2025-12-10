@@ -10,19 +10,49 @@ import java.util.*;
  * AI strategy implementation using a combination of random and intelligent targeting.
  * Uses a "hunt and target" approach: randomly searches for ships using a checkerboard
  * pattern, then targets adjacent cells when a hit is detected.
- * Improved to handle edge cases when ships are partially surrounded.
+ * Improved to handle edge cases when ships are partially surrounded by misses.
  */
 public class RandomAIStrategy implements IAIStrategy {
 
+    /**
+     * Random number generator for selecting hunt targets.
+     */
     private final Random random;
+
+    /**
+     * List of coordinates that haven't been shot at yet.
+     */
     private final List<Coordinate> availableTargets;
+
+    /**
+     * Queue of coordinates to target after a hit (adjacent cells to pursue).
+     */
     private final List<Coordinate> targetQueue;
+
+    /**
+     * Chain of consecutive hits on the current ship being targeted.
+     */
     private final List<Coordinate> currentHitChain;
 
+    /**
+     * The first hit coordinate in the current targeting chain.
+     */
     private Coordinate firstHitInChain;
+
+    /**
+     * Flag indicating whether the AI is in hunt mode (searching) or target mode (pursuing).
+     */
     private boolean huntMode;
+
+    /**
+     * Reference to the last opponent board for checking cell states.
+     */
     private IBoard lastOpponentBoard;
 
+    /**
+     * Constructs a new RandomAIStrategy with default settings.
+     * Initializes the AI in hunt mode with all 10x10 board coordinates available.
+     */
     public RandomAIStrategy() {
         this.random = new Random();
         this.availableTargets = new ArrayList<>();
@@ -32,6 +62,9 @@ public class RandomAIStrategy implements IAIStrategy {
         initializeAvailableTargets();
     }
 
+    /**
+     * Initializes the list of all available target coordinates on a 10x10 board.
+     */
     private void initializeAvailableTargets() {
         availableTargets.clear();
         for (int x = 0; x < 10; x++) {
@@ -41,6 +74,14 @@ public class RandomAIStrategy implements IAIStrategy {
         }
     }
 
+    /**
+     * Selects the next target coordinate based on current strategy mode.
+     * In target mode (after a hit), prioritizes cells from the target queue and
+     * attempts to extend the hit chain. In hunt mode, uses a checkerboard pattern.
+     *
+     * @param opponentBoard the opponent's board to analyze
+     * @return the selected coordinate to target, or null if no valid targets remain
+     */
     @Override
     public Coordinate selectTarget(IBoard opponentBoard) {
         this.lastOpponentBoard = opponentBoard;
@@ -49,7 +90,7 @@ public class RandomAIStrategy implements IAIStrategy {
             return null;
         }
 
-        // Modo Target: tenemos hits que perseguir
+        // Target mode: pursuing hits
         if (!huntMode && !targetQueue.isEmpty()) {
             Iterator<Coordinate> iterator = targetQueue.iterator();
             while (iterator.hasNext()) {
@@ -62,25 +103,25 @@ public class RandomAIStrategy implements IAIStrategy {
             }
         }
 
-        // Si el target queue está vacío pero tenemos hits activos, buscar más opciones
+        // If target queue is empty but we have active hits, look for more options
         if (!huntMode && !currentHitChain.isEmpty()) {
             Coordinate extended = findExtendedTarget();
             if (extended != null) {
                 return extended;
             }
 
-            // Verificar si el barco está hundido
+            // Check if the ship is sunk
             if (isChainSunk()) {
                 resetToHuntMode();
             }
         }
 
-        // Modo Hunt: búsqueda con patrón de tablero de ajedrez
+        // Hunt mode: search with checkerboard pattern
         if (huntMode && !availableTargets.isEmpty()) {
             return selectHuntTarget();
         }
 
-        // Fallback a hunt mode
+        // Fallback to hunt mode
         if (!availableTargets.isEmpty()) {
             huntMode = true;
             currentHitChain.clear();
@@ -92,14 +133,19 @@ public class RandomAIStrategy implements IAIStrategy {
     }
 
     /**
-     * Busca un objetivo extendido cuando no hay adyacentes disponibles
+     * Finds an extended target when no adjacent cells are available.
+     * Attempts to continue firing along the direction of a hit chain,
+     * skipping up to 2 cells to find the next valid target.
+     * Checks for blocking misses along the path.
+     *
+     * @return an extended target coordinate, or null if none found
      */
     private Coordinate findExtendedTarget() {
         if (currentHitChain.size() < 2) {
             return null;
         }
 
-        // Determinar la dirección del barco
+        // Determine ship direction from first two hits
         Coordinate first = currentHitChain.get(0);
         Coordinate second = currentHitChain.get(1);
 
@@ -110,7 +156,7 @@ public class RandomAIStrategy implements IAIStrategy {
             return null;
         }
 
-        // Intentar extender desde el último hit
+        // Try extending from the last hit
         Coordinate last = currentHitChain.get(currentHitChain.size() - 1);
         for (int dist = 1; dist <= 2; dist++) {
             Coordinate extended = new Coordinate(
@@ -119,7 +165,7 @@ public class RandomAIStrategy implements IAIStrategy {
             );
 
             if (isValidCoordinate(extended) && availableTargets.contains(extended)) {
-                // Verificar que no haya un MISS bloqueando
+                // Check that there's no MISS blocking the path
                 boolean blocked = false;
                 for (int i = 1; i < dist; i++) {
                     Coordinate intermediate = new Coordinate(
@@ -137,7 +183,7 @@ public class RandomAIStrategy implements IAIStrategy {
             }
         }
 
-        // Intentar extender desde el primer hit en dirección opuesta
+        // Try extending from the first hit in opposite direction
         for (int dist = 1; dist <= 2; dist++) {
             Coordinate extended = new Coordinate(
                     first.getX() - (dx * dist),
@@ -166,7 +212,10 @@ public class RandomAIStrategy implements IAIStrategy {
     }
 
     /**
-     * Verifica si una coordenada es un MISS
+     * Checks if a coordinate contains a miss.
+     *
+     * @param coord the coordinate to check
+     * @return true if the coordinate has been shot and was a miss, false otherwise
      */
     private boolean isMiss(Coordinate coord) {
         if (lastOpponentBoard == null) {
@@ -177,7 +226,10 @@ public class RandomAIStrategy implements IAIStrategy {
     }
 
     /**
-     * Verifica si la cadena de hits actual está completamente hundida
+     * Checks if the current hit chain represents a completely sunk ship.
+     * Verifies that all coordinates in the hit chain have SUNK status.
+     *
+     * @return true if all hits in the chain are marked as sunk, false otherwise
      */
     private boolean isChainSunk() {
         if (lastOpponentBoard == null || currentHitChain.isEmpty()) {
@@ -193,12 +245,19 @@ public class RandomAIStrategy implements IAIStrategy {
         return true;
     }
 
+    /**
+     * Selects a target during hunt mode using a checkerboard pattern.
+     * Prioritizes coordinates where (x + y) is even for optimal ship detection,
+     * as this pattern ensures hitting any ship of size 2 or larger.
+     *
+     * @return a randomly selected hunt target coordinate, or null if none available
+     */
     private Coordinate selectHuntTarget() {
         if (availableTargets.isEmpty()) {
             return null;
         }
 
-        // Priorizar patrón de tablero de ajedrez
+        // Prioritize checkerboard pattern (x+y is even)
         List<Coordinate> checkerboardTargets = new ArrayList<>();
         for (Coordinate coord : availableTargets) {
             if ((coord.getX() + coord.getY()) % 2 == 0) {
@@ -223,6 +282,15 @@ public class RandomAIStrategy implements IAIStrategy {
         return null;
     }
 
+    /**
+     * Updates the AI strategy based on the result of the last shot.
+     * On a hit, switches to target mode and adds adjacent cells to pursue.
+     * On a miss, checks if the target queue is empty and whether to return to hunt mode.
+     * Automatically detects when a ship is sunk and resets to hunt mode.
+     *
+     * @param lastShot the coordinate that was just shot
+     * @param wasHit true if the shot hit a ship, false if it was a miss
+     */
     @Override
     public void updateStrategy(Coordinate lastShot, boolean wasHit) {
         availableTargets.remove(lastShot);
@@ -230,22 +298,22 @@ public class RandomAIStrategy implements IAIStrategy {
         if (wasHit) {
             huntMode = false;
 
-            // Agregar a la cadena de hits
+            // Add to hit chain
             if (firstHitInChain == null) {
                 firstHitInChain = lastShot;
                 currentHitChain.clear();
             }
             currentHitChain.add(lastShot);
 
-            // Agregar adyacentes a la cola
+            // Add adjacent cells to target queue
             addAdjacentTargets(lastShot);
 
-            // Si ya tenemos 2+ hits, verificar si están hundidos
+            // If we have 2+ hits, check if they're all sunk
             if (currentHitChain.size() >= 2 && isChainSunk()) {
                 resetToHuntMode();
             }
         } else {
-            // Si erramos y no hay más targets en cola, verificar estado
+            // If we missed and no more targets in queue, check status
             if (targetQueue.isEmpty()) {
                 if (currentHitChain.isEmpty() || isChainSunk()) {
                     resetToHuntMode();
@@ -254,6 +322,12 @@ public class RandomAIStrategy implements IAIStrategy {
         }
     }
 
+    /**
+     * Adds all valid adjacent coordinates (up, down, left, right) to the target queue.
+     * Only adds coordinates that are within bounds, available, and not already queued.
+     *
+     * @param hit the coordinate that was hit
+     */
     private void addAdjacentTargets(Coordinate hit) {
         Coordinate up = new Coordinate(hit.getX(), hit.getY() - 1);
         if (isValidCoordinate(up) && !targetQueue.contains(up) && availableTargets.contains(up)) {
@@ -276,11 +350,21 @@ public class RandomAIStrategy implements IAIStrategy {
         }
     }
 
+    /**
+     * Checks if a coordinate is within valid board bounds (0-9 for both x and y).
+     *
+     * @param coord the coordinate to validate
+     * @return true if the coordinate is within the 10x10 board, false otherwise
+     */
     private boolean isValidCoordinate(Coordinate coord) {
         return coord.getX() >= 0 && coord.getX() < 10 &&
                 coord.getY() >= 0 && coord.getY() < 10;
     }
 
+    /**
+     * Resets the AI to hunt mode, clearing all target data.
+     * Clears the hit chain, target queue, and first hit reference.
+     */
     private void resetToHuntMode() {
         huntMode = true;
         firstHitInChain = null;
@@ -288,6 +372,11 @@ public class RandomAIStrategy implements IAIStrategy {
         targetQueue.clear();
     }
 
+    /**
+     * Resets the strategy to its initial state.
+     * Clears all targets, hit chains, and reinitializes available targets to the full board.
+     * Returns the AI to hunt mode.
+     */
     @Override
     public void reset() {
         availableTargets.clear();

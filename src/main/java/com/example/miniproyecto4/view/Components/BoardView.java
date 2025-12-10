@@ -20,17 +20,47 @@ import java.util.Map;
  * Visual representation of a game board in the Battleship game.
  * Manages a grid of CellView components and provides methods to update
  * cell states for hits, misses, ships, and sunk ships.
- * Now includes continuous ship rendering across multiple cells.
+ * Includes continuous ship rendering across multiple cells for enhanced visuals.
  */
 public class BoardView extends Pane implements IBoardView {
 
+    /**
+     * The number of cells in each dimension of the board.
+     */
     private final int size;
+
+    /**
+     * The pixel size of each individual cell.
+     */
     private final double cellSize;
+
+    /**
+     * 2D array containing all cell views on the board.
+     */
     private final CellView[][] cells;
+
+    /**
+     * Layer containing all cell views, drawn first.
+     */
     private final Pane cellLayer;
+
+    /**
+     * Layer containing ship graphics, drawn above cells.
+     */
     private final Pane shipLayer;
+
+    /**
+     * Map storing the visual representation of each placed ship.
+     */
     private final Map<IShip, Group> shipGraphics;
 
+    /**
+     * Constructs a new BoardView with the specified size and cell dimensions.
+     * Creates layered panes for cells and ships, initializes the grid.
+     *
+     * @param size the number of cells in each dimension (width and height)
+     * @param cellSize the pixel size of each cell
+     */
     public BoardView(int size, double cellSize) {
         this.size = size;
         this.cellSize = cellSize;
@@ -51,6 +81,11 @@ public class BoardView extends Pane implements IBoardView {
         setMaxSize(totalSize, totalSize);
     }
 
+    /**
+     * Initializes the board by creating and positioning all cells and layers.
+     * Creates the cell layer first, then adds individual cells with gaps,
+     * and finally adds the ship layer on top.
+     */
     private void initializeBoard() {
         // Add cell layer first
         getChildren().add(cellLayer);
@@ -60,7 +95,7 @@ public class BoardView extends Pane implements IBoardView {
                 CellView cellView = new CellView(cellSize);
                 cells[x][y] = cellView;
 
-                // Position cells with gaps
+                // Position cells with 2px gaps
                 cellView.setLayoutX(x * (cellSize + 2));
                 cellView.setLayoutY(y * (cellSize + 2));
 
@@ -73,7 +108,11 @@ public class BoardView extends Pane implements IBoardView {
     }
 
     /**
-     * Draws a complete ship across multiple cells as one continuous graphic
+     * Draws a complete ship across multiple cells as one continuous graphic.
+     * The ship is rendered as a single visual element spanning its coordinates.
+     * Creates different ship designs based on ship size.
+     *
+     * @param ship the ship to draw on the board
      */
     public void drawContinuousShip(IShip ship) {
         List<Coordinate> coords = ship.getCoordinates();
@@ -107,6 +146,15 @@ public class BoardView extends Pane implements IBoardView {
         shipLayer.getChildren().add(shipGroup);
     }
 
+    /**
+     * Creates a small boat graphic for single-cell ships (frigate).
+     * Renders a triangular boat shape with a mast.
+     *
+     * @param x the x position in pixels
+     * @param y the y position in pixels
+     * @param horizontal true if the boat is oriented horizontally
+     * @return a Group containing the boat graphic elements
+     */
     private Group createSmallBoat(double x, double y, boolean horizontal) {
         Group boat = new Group();
 
@@ -155,6 +203,17 @@ public class BoardView extends Pane implements IBoardView {
         return boat;
     }
 
+    /**
+     * Creates a destroyer ship graphic spanning two cells.
+     * Renders a military vessel with hull, bridge, windows, and gun turret.
+     *
+     * @param x the starting x position in pixels
+     * @param y the starting y position in pixels
+     * @param width the total width of the ship in pixels
+     * @param height the total height of the ship in pixels
+     * @param horizontal true if the ship is oriented horizontally
+     * @return a Group containing the destroyer graphic elements
+     */
     private Group createDestroyer(double x, double y, double width, double height, boolean horizontal) {
         Group destroyer = new Group();
 
@@ -262,6 +321,17 @@ public class BoardView extends Pane implements IBoardView {
         return destroyer;
     }
 
+    /**
+     * Creates a submarine ship graphic spanning three cells.
+     * Renders a submarine with elliptical body, tower, and periscope.
+     *
+     * @param x the starting x position in pixels
+     * @param y the starting y position in pixels
+     * @param width the total width of the ship in pixels
+     * @param height the total height of the ship in pixels
+     * @param horizontal true if the ship is oriented horizontally
+     * @return a Group containing the submarine graphic elements
+     */
     private Group createSubmarine(double x, double y, double width, double height, boolean horizontal) {
         Group submarine = new Group();
 
@@ -337,6 +407,18 @@ public class BoardView extends Pane implements IBoardView {
         return submarine;
     }
 
+    /**
+     * Creates an aircraft carrier ship graphic spanning four or more cells.
+     * Renders a large carrier with hull, flight deck, island/control tower,
+     * radar antenna, windows, and deck markings.
+     *
+     * @param x the starting x position in pixels
+     * @param y the starting y position in pixels
+     * @param width the total width of the ship in pixels
+     * @param height the total height of the ship in pixels
+     * @param horizontal true if the ship is oriented horizontally
+     * @return a Group containing the carrier graphic elements
+     */
     private Group createCarrier(double x, double y, double width, double height, boolean horizontal) {
         Group carrier = new Group();
 
@@ -478,8 +560,9 @@ public class BoardView extends Pane implements IBoardView {
     /**
      * Removes the continuous ship graphics from the board.
      * Clears ship visuals while preserving hits, misses, and sunk states.
+     * Used when toggling ship visibility or resetting the board.
      *
-     * @param ship The ship to remove from visual display
+     * @param ship the ship to remove from visual display
      */
     public void removeShipGraphic(IShip ship) {
         Group graphic = shipGraphics.get(ship);
@@ -489,6 +572,13 @@ public class BoardView extends Pane implements IBoardView {
         }
     }
 
+    /**
+     * Gets the cell view at the specified grid coordinates.
+     *
+     * @param x the x coordinate in the grid (0-based)
+     * @param y the y coordinate in the grid (0-based)
+     * @return the CellView at that position, or null if out of bounds
+     */
     public CellView getCell(int x, int y) {
         if (x >= 0 && x < size && y >= 0 && y < size) {
             return cells[x][y];
@@ -496,10 +586,22 @@ public class BoardView extends Pane implements IBoardView {
         return null;
     }
 
+    /**
+     * Gets the cell view at the specified coordinate object.
+     *
+     * @param coordinate the coordinate to get the cell from
+     * @return the CellView at that coordinate, or null if out of bounds
+     */
     public CellView getCell(Coordinate coordinate) {
         return getCell(coordinate.getX(), coordinate.getY());
     }
 
+    /**
+     * Draws a cell with a specific color.
+     *
+     * @param coordinate the coordinate of the cell to color
+     * @param color the color to apply in hexadecimal format
+     */
     @Override
     public void drawCell(Coordinate coordinate, String color) {
         CellView cell = getCell(coordinate);
@@ -508,6 +610,12 @@ public class BoardView extends Pane implements IBoardView {
         }
     }
 
+    /**
+     * Marks a cell as hit by a shot.
+     * Displays hit visual effects on the cell.
+     *
+     * @param coordinate the coordinate of the cell to mark
+     */
     @Override
     public void markHit(Coordinate coordinate) {
         CellView cell = getCell(coordinate);
@@ -516,6 +624,12 @@ public class BoardView extends Pane implements IBoardView {
         }
     }
 
+    /**
+     * Marks a cell as a miss (shot but no ship).
+     * Displays miss visual indicator on the cell.
+     *
+     * @param coordinate the coordinate of the cell to mark
+     */
     @Override
     public void markMiss(Coordinate coordinate) {
         CellView cell = getCell(coordinate);
@@ -524,11 +638,24 @@ public class BoardView extends Pane implements IBoardView {
         }
     }
 
+    /**
+     * Marks a cell as containing a ship.
+     * Note: Ships are now drawn as continuous graphics via drawContinuousShip().
+     * This method is kept for interface compatibility.
+     *
+     * @param coordinate the coordinate of the cell to mark
+     */
     @Override
     public void markShip(Coordinate coordinate) {
         // Ships are now drawn as continuous graphics
     }
 
+    /**
+     * Marks a cell as part of a sunk ship.
+     * Displays sunk ship visual effects on the cell.
+     *
+     * @param coordinate the coordinate of the cell to mark
+     */
     @Override
     public void markSunk(Coordinate coordinate) {
         CellView cell = getCell(coordinate);
@@ -537,6 +664,10 @@ public class BoardView extends Pane implements IBoardView {
         }
     }
 
+    /**
+     * Clears all cells and ship graphics from the board.
+     * Resets the board to its initial empty state.
+     */
     @Override
     public void clear() {
         for (int x = 0; x < size; x++) {
@@ -548,6 +679,9 @@ public class BoardView extends Pane implements IBoardView {
         shipGraphics.clear();
     }
 
+    /**
+     * Refreshes all cell visualizations on the board.
+     */
     @Override
     public void refresh() {
         for (int x = 0; x < size; x++) {
@@ -556,6 +690,4 @@ public class BoardView extends Pane implements IBoardView {
             }
         }
     }
-
-
 }

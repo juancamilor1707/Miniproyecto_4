@@ -20,14 +20,47 @@ import javafx.scene.text.Text;
  */
 public class CellView extends StackPane {
 
+    /**
+     * The background rectangle of the cell.
+     */
     private final Rectangle background;
+
+    /**
+     * The size of the cell in pixels.
+     */
     private final double size;
+
+    /**
+     * The current state of the cell (EMPTY, SHIP, HIT, MISS, SUNK).
+     */
     private String currentState;
+
+    /**
+     * Flag indicating if a preview is currently active.
+     */
     private boolean isPreviewActive;
+
+    /**
+     * The original color of the cell before hover effects.
+     */
     private String originalColor;
-    private String shipPartType = "middle"; // "front", "back", "middle", "single"
+
+    /**
+     * The type of ship part this cell represents (front, back, middle, single).
+     */
+    private String shipPartType = "middle";
+
+    /**
+     * Flag indicating if the ship is oriented horizontally.
+     */
     private boolean isHorizontal = true;
 
+    /**
+     * Constructs a new CellView with the specified size.
+     * Initializes the cell as empty with water color and sets up hover effects.
+     *
+     * @param size the size of the cell in pixels (width and height)
+     */
     public CellView(double size) {
         this.size = size;
         this.currentState = "EMPTY";
@@ -55,11 +88,22 @@ public class CellView extends StackPane {
         });
     }
 
+    /**
+     * Sets the fill color of the cell background.
+     *
+     * @param color the color in hexadecimal format
+     */
     public void setFill(String color) {
         background.setFill(Color.web(color));
         originalColor = color;
     }
 
+    /**
+     * Shows a placement preview on the cell.
+     * Displays green for valid placement or red for invalid placement.
+     *
+     * @param isValid true if the placement is valid, false otherwise
+     */
     public void showPreview(boolean isValid) {
         if (currentState.equals("EMPTY")) {
             isPreviewActive = true;
@@ -73,6 +117,9 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Clears the placement preview and restores the original color.
+     */
     public void clearPreview() {
         if (isPreviewActive && currentState.equals("EMPTY")) {
             isPreviewActive = false;
@@ -81,6 +128,10 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Marks the cell as hit by a shot.
+     * Changes the color and adds a fire symbol.
+     */
     public void markAsHit() {
         currentState = "HIT";
         isPreviewActive = false;
@@ -92,6 +143,10 @@ public class CellView extends StackPane {
         getChildren().add(fireSymbol);
     }
 
+    /**
+     * Marks the cell as a miss (shot but no ship).
+     * Displays an X marker on water.
+     */
     public void markAsMiss() {
         currentState = "MISS";
         isPreviewActive = false;
@@ -107,8 +162,9 @@ public class CellView extends StackPane {
 
     /**
      * Marks the cell as containing part of a ship with shape information.
-     * @param partType "front", "back", "middle", or "single"
-     * @param horizontal true if ship is horizontal
+     *
+     * @param partType the type of ship part ("front", "back", "middle", or "single")
+     * @param horizontal true if ship is horizontal, false if vertical
      */
     public void markAsShip(String partType, boolean horizontal) {
         this.shipPartType = partType;
@@ -116,6 +172,10 @@ public class CellView extends StackPane {
         markAsShip();
     }
 
+    /**
+     * Marks the cell as containing part of a ship.
+     * Draws the appropriate ship part graphic based on type and orientation.
+     */
     public void markAsShip() {
         currentState = "SHIP";
         isPreviewActive = false;
@@ -126,6 +186,10 @@ public class CellView extends StackPane {
         originalColor = Colors.SHIP;
     }
 
+    /**
+     * Draws the ship part based on the current ship part type and orientation.
+     * Creates different graphics for front, back, middle, and single ship parts.
+     */
     private void drawShipPart() {
         // Base del barco con gradiente
         LinearGradient shipGradient = new LinearGradient(
@@ -136,7 +200,7 @@ public class CellView extends StackPane {
         );
 
         if (shipPartType.equals("single")) {
-            // Barco pequeño completo (fragata)
+            // Complete small ship (frigate)
             drawCompleteSmallShip(shipGradient);
         } else if (shipPartType.equals("front")) {
             drawFrontPart(shipGradient);
@@ -147,6 +211,12 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Draws a complete small ship for single-cell ships (frigate).
+     * Creates a boat shape with a window based on orientation.
+     *
+     * @param gradient the gradient to use for the ship body
+     */
     private void drawCompleteSmallShip(LinearGradient gradient) {
         if (isHorizontal) {
             Polygon boat = new Polygon();
@@ -159,7 +229,6 @@ public class CellView extends StackPane {
             boat.setFill(gradient);
             boat.setStroke(Color.web("#3A3A3A"));
             boat.setStrokeWidth(1.5);
-
 
             Circle window = new Circle(size * 0.5, size * 0.5, size * 0.1);
             window.setFill(Color.web("#87CEEB"));
@@ -186,9 +255,14 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Draws the front part of a ship.
+     * Creates a pointed bow with a window.
+     *
+     * @param gradient the gradient to use for the ship body
+     */
     private void drawFrontPart(LinearGradient gradient) {
         if (isHorizontal) {
-
             Polygon front = new Polygon();
             front.getPoints().addAll(
                     size * 0.1, size * 0.5,
@@ -207,7 +281,6 @@ public class CellView extends StackPane {
 
             getChildren().addAll(front, window);
         } else {
-
             Polygon front = new Polygon();
             front.getPoints().addAll(
                     size * 0.5, size * 0.1,
@@ -227,6 +300,12 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Draws the back part of a ship.
+     * Creates a flat stern with a chimney and smoke.
+     *
+     * @param gradient the gradient to use for the ship body
+     */
     private void drawBackPart(LinearGradient gradient) {
         if (isHorizontal) {
             Rectangle back = new Rectangle(size * 0.1, size * 0.25, size * 0.8, size * 0.5);
@@ -263,6 +342,12 @@ public class CellView extends StackPane {
         }
     }
 
+    /**
+     * Draws the middle part of a ship.
+     * Creates a rectangular section with two windows.
+     *
+     * @param gradient the gradient to use for the ship body
+     */
     private void drawMiddlePart(LinearGradient gradient) {
         Rectangle middle = new Rectangle(size * 0.15, size * 0.25, size * 0.7, size * 0.5);
         middle.setFill(gradient);
@@ -286,6 +371,10 @@ public class CellView extends StackPane {
         getChildren().addAll(middle, window1, window2);
     }
 
+    /**
+     * Marks the cell as part of a sunk ship.
+     * Displays dark gradient, fire effects, and cross marks.
+     */
     public void markAsSunk() {
         currentState = "SUNK";
         isPreviewActive = false;
@@ -313,7 +402,13 @@ public class CellView extends StackPane {
         originalColor = Colors.SUNK;
     }
 
-
+    /**
+     * Creates a fire symbol graphic for hit and sunk cells.
+     * Generates a multi-layered flame effect with orange and yellow colors.
+     *
+     * @param fireSize the size of the fire effect
+     * @return a Group containing all fire graphic elements
+     */
     private Group createFireSymbol(double fireSize) {
         Group fire = new Group();
 
@@ -347,6 +442,10 @@ public class CellView extends StackPane {
         return fire;
     }
 
+    /**
+     * Resets the cell to its initial empty state.
+     * Clears all graphics, status indicators, and ship part information.
+     */
     public void reset() {
         currentState = "EMPTY";
         isPreviewActive = false;
@@ -359,10 +458,19 @@ public class CellView extends StackPane {
         originalColor = Colors.WATER;
     }
 
+    /**
+     * Refreshes the cell visualization.
+     * Method for compatibility with the IBoardView interface.
+     */
     public void refresh() {
         // Method for compatibility
     }
 
+    /**
+     * Gets the current state of this cell.
+     *
+     * @return the current state string ("EMPTY", "SHIP", "HIT", "MISS", or "SUNK")
+     */
     public String getCurrentState() {
         return currentState;
     }
