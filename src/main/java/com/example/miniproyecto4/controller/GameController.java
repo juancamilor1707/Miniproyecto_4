@@ -10,17 +10,21 @@ import com.example.miniproyecto4.model.Ship.ShipFactory;
 import com.example.miniproyecto4.model.Shot.ShotResult;
 import com.example.miniproyecto4.model.Validation.Orientation;
 import com.example.miniproyecto4.view.Lose;
+import com.example.miniproyecto4.view.Menu;
 import com.example.miniproyecto4.view.WinView;
 import com.example.miniproyecto4.view.Components.BoardView;
 import com.example.miniproyecto4.view.Components.CellView;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller for the main game view.
@@ -56,6 +60,9 @@ public class GameController {
     @FXML
     private Button showEnemyBoardButton;
 
+    @FXML
+    private Button backToMenuButton;
+
     private GameManager gameManager;
     private BoardView playerBoard;
     private BoardView enemyBoard;
@@ -78,6 +85,10 @@ public class GameController {
         rotateButton.setOnAction(e -> handleRotate());
         startGameButton.setOnAction(e -> handleStartGame());
         showEnemyBoardButton.setOnAction(e -> handleShowEnemyBoard());
+
+        if (backToMenuButton != null) {
+            backToMenuButton.setOnAction(e -> handleBackToMenu());
+        }
     }
 
     public void setBoards(BoardView playerBoard, BoardView enemyBoard) {
@@ -91,6 +102,39 @@ public class GameController {
         }
     }
 
+    private void handleBackToMenu() {
+        if (placementMode) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Salir al Menú");
+            alert.setHeaderText("¿Estás seguro de salir?");
+            alert.setContentText("No has iniciado el juego. El progreso no se guardará.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                openMenu();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Salir al Menú");
+            alert.setHeaderText("¿Deseas guardar y salir?");
+            alert.setContentText("La partida se guardará automáticamente.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                gameManager.saveGame();
+                openMenu();
+            }
+        }
+    }
+
+    private void openMenu() {
+        Menu menuView = new Menu();
+        menuView.show();
+
+        Stage stage = (Stage) statusLabel.getScene().getWindow();
+        stage.close();
+    }
+
     private void loadGameState() {
         placementMode = false;
 
@@ -100,6 +144,10 @@ public class GameController {
         rotateButton.setVisible(false);
         startGameButton.setVisible(false);
         showEnemyBoardButton.setVisible(true);
+
+        if (backToMenuButton != null) {
+            backToMenuButton.setVisible(true);
+        }
 
         javafx.scene.layout.VBox enemyBox = (javafx.scene.layout.VBox) showEnemyBoardButton.getParent().getParent().lookup("#enemyBoardBox");
         if (enemyBox != null) {
@@ -178,6 +226,10 @@ public class GameController {
     private void setupPlacementMode() {
         updateShipsRemaining();
         updateCurrentShipLabel();
+
+        if (backToMenuButton != null) {
+            backToMenuButton.setVisible(true);
+        }
 
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
