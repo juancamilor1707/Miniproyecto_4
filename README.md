@@ -308,8 +308,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Email: juancamiloramos01@gmail.com
 
 **Juan Manuel**
-- GitHub: [@yourusername](https://github.com/juancamilor1707)
+- GitHub: [@juanmunozdelgado-oss](https://github.com/juanmunozdelgado-oss)
 - Email: juan.munoz.delgado@gmail.com
+
+**Andres Muños**
+- GitHub: [@jAndresMunozMoreno](https://github.com/AndresMunozMoreno)
+- Email: andresm.felipe2006@gmail.com
 
 
 ---
