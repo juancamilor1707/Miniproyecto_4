@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Manages player information including nickname, game board, and ship sinking statistics.
  * Implements Serializable to support game state persistence.
  */
-public class Player implements IPlayer, Serializable {
+public class Player extends PlayerAdapter implements Serializable {
 
     /**
      * Serial version UID for serialization compatibility.

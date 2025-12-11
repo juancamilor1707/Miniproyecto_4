@@ -24,7 +24,7 @@ import java.util.Random;
  * Implements the Singleton pattern to ensure only one game instance exists.
  * Handles turn management, shot processing, game persistence, and win conditions.
  */
-public class GameManager implements IGameManager {
+public class GameManager extends GameManagerAdapter {
 
     /**
      * Singleton instance of the GameManager.

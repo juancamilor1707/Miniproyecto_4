@@ -12,7 +12,7 @@ import java.util.*;
  * pattern, then targets adjacent cells when a hit is detected.
  * Improved to handle edge cases when ships are partially surrounded by misses.
  */
-public class RandomAIStrategy implements IAIStrategy {
+public class RandomAIStrategy extends AIStrategyAdapter {
 
     /**
      * Random number generator for selecting hunt targets.

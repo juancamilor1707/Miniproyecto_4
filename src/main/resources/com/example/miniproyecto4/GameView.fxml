@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="rootPane" prefHeight="1000.0" prefWidth="1400.0" styleClass="endScreen" stylesheets="@Css/Styles.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.miniproyecto4.controller.GameController">
+<BorderPane fx:id="rootPane" prefHeight="1000.0" prefWidth="1400.0" styleClass="endScreen" stylesheets="@Css/Styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.miniproyecto4.controller.GameController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
@@ -105,7 +105,7 @@
    <right>
       <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-67.0" layoutY="424.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-37.0" layoutY="423.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@Images/Wave.png" />
                </image>
@@ -125,12 +125,12 @@
                   <Image url="@Images/SuperSimpleWave.png" />
                </image>
             </ImageView>
-            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-24.0" layoutY="236.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-2.0" layoutY="230.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@Images/Boat.png" />
                </image>
             </ImageView>
-            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-67.0" layoutY="64.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="-37.0" layoutY="62.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@Images/BoatPieces2.png" />
                </image>
