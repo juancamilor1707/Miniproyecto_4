@@ -34,7 +34,7 @@ import java.util.Optional;
  * board updates, and game state transitions.
  */
 public class GameController {
-<<<<<<< HEAD
+
     /**
      * Flag indicating whether the player is currently viewing enemy ships.
      */
@@ -43,10 +43,9 @@ public class GameController {
     /**
      * Label displaying the current game status and turn information.
      */
-=======
     private ShipImageView cursorShipImage;
     private Pane gameContainer;
->>>>>>> 3078e57 (intento en vano)
+
     @FXML
     private Label statusLabel;
 
