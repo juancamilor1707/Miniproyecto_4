@@ -57,7 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see IShip
  */
 public class GameController {
-<<<<<<< HEAD
+
     /**
      * Flag indicating whether the player is currently viewing enemy ships.
      * When true, enemy ships are visible on the board (cheat mode).
@@ -87,10 +87,9 @@ public class GameController {
      * Label displaying the current game status and turn information.
      * Shows messages like "Tu turno", "Turno de la máquina", "¡Tocado!", etc.
      */
-=======
     private ShipImageView cursorShipImage;
     private Pane gameContainer;
->>>>>>> 3078e57 (intento en vano)
+
     @FXML
     private Label statusLabel;
 
