@@ -22,15 +22,15 @@
 <div align="center">
 
 ### Main Game Interface
-![Game Screenshot](./screenshots/game-main.png)
+![Game Screenshot](./images/mainGameInterface.png)
 *Strategic gameplay with dual board view*
 
 ### Ship Placement Phase
-![Ship Placement](./screenshots/ship-placement.png)
+![Ship Placement](./images/shipPlacement.png)
 *Intuitive ship placement with visual preview*
 
 ### Battle in Action
-![Battle Scene](./screenshots/battle-action.png)
+![Battle Scene](./images/battleScene.png)
 *Real-time combat with hit/miss indicators*
 
 </div>
@@ -39,7 +39,7 @@
 
 ## 🌊 About The Project
 
-**Battleship** is a classic naval warfare strategy game implemented in Java with JavaFX. Command your fleet, strategically place your ships, and engage in tactical combat against an intelligent AI opponent. 
+**Battleship** is a classic naval warfare strategy game implemented in Java with JavaFX. Command your fleet, strategically place your ships, and engage in tactical combat against an intelligent AI opponent.
 
 This project showcases advanced software engineering principles including:
 - 🎯 **Clean Architecture** with separation of concerns
@@ -72,11 +72,11 @@ This project showcases advanced software engineering principles including:
 ### 🎨 Visual Design
 - **Modern UI** - Clean JavaFX interface with custom styling
 - **Color-Coded States** - Easy-to-read cell status indicators
-  - 🔵 Water - Unexplored territory
-  - ⚫ Ship - Your fleet positions
-  - 🔴 Hit - Successful strikes
-  - ⚪ Miss - Shots that missed
-  - ⚫ Sunk - Destroyed vessels
+    - 🔵 Water - Unexplored territory
+    - ⚫ Ship - Your fleet positions
+    - 🔴 Hit - Successful strikes
+    - ⚪ Miss - Shots that missed
+    - ⚫ Sunk - Destroyed vessels
 
 <div align="center">
 
@@ -121,33 +121,6 @@ This project showcases advanced software engineering principles including:
 🎨 JavaFX 21.0.1
 🛠️ Maven or Gradle (optional)
 ```
-
-### Quick Start
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/battleship-game.git
-cd battleship-game
-```
-
-2. **Build the project**
-```bash
-# Using Maven
-mvn clean install
-
-# Or using Gradle
-gradle build
-```
-
-3. **Run the game**
-```bash
-# Using Maven
-mvn javafx:run
-
-# Or directly with Java
-java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -jar battleship.jar
-```
-
 ---
 
 ## 🎮 How to Play
@@ -166,20 +139,20 @@ Your naval fleet consists of 10 ships across 4 types:
 ### 📋 Game Rules
 
 1. **Setup Phase**
-   - Place all 10 ships on your board
-   - Ships can be placed horizontally or vertically
-   - Press `R` to rotate ships during placement
-   - Ships cannot overlap or extend beyond the grid
+    - Place all 10 ships on your board
+    - Ships can be placed horizontally or vertically
+    - Press `R` to rotate ships during placement
+    - Ships cannot overlap or extend beyond the grid
 
 2. **Battle Phase**
-   - Players alternate turns shooting at opponent's grid
-   - Click on enemy board cells to fire
-   - Receive immediate feedback: Hit, Miss, or Sunk
-   - First player to sink all enemy ships wins!
+    - Players alternate turns shooting at opponent's grid
+    - Click on enemy board cells to fire
+    - Receive immediate feedback: Hit, Miss, or Sunk
+    - First player to sink all enemy ships wins!
 
 3. **Victory Conditions**
-   - 🏆 Destroy all 10 enemy ships to win
-   - ⚓ Lose when all your ships are sunk
+    - 🏆 Destroy all 10 enemy ships to win
+    - ⚓ Lose when all your ships are sunk
 
 ### ⌨️ Controls
 
@@ -250,26 +223,6 @@ RandomAIStrategy         // Hunt-and-target implementation
 
 ## 🧪 Testing
 
-### Running Tests
-
-```bash
-# Run all tests
-mvn test
-
-# Run specific test class
-mvn test -Dtest=BoardTest
-
-# Generate coverage report
-mvn jacoco:report
-```
-
-### Test Coverage
-
-- ✅ **Board Operations** - 100% coverage
-- ✅ **Ship Management** - 100% coverage
-- ✅ **Validation Logic** - 100% coverage
-- ✅ **Game Flow** - Comprehensive integration tests
-
 ### Key Test Classes
 
 ```java
@@ -335,8 +288,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Email: juancamiloramos01@gmail.com
 
 **Juan Manuel**
-- GitHub: [@yourusername](https://github.com/juancamilor1707)
+- GitHub: [@juanmunozdelgado-oss](https://github.com/juanmunozdelgado-oss)
 - Email: juan.munoz.delgado@gmail.com
+
+**Andres Muños**
+- GitHub: [@AndresMunozMoreno](https://github.com/AndresMunozMoreno)
+- Email: andresm.felipe2006@gmail.com
 
 
 ---

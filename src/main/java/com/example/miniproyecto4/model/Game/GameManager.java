@@ -18,14 +18,15 @@ import com.example.miniproyecto4.model.Shot.ShotResult;
 import com.example.miniproyecto4.model.Validation.Orientation;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Manages the game flow and state for a Battleship game.
  * Implements the Singleton pattern to ensure only one game instance exists.
  * Handles turn management, shot processing, game persistence, and win conditions.
+ * Thread-safe implementation using ReentrantLock for concurrent access protection.
  */
-public class GameManager extends GameManagerAdapter {
-
+public class GameManager implements IGameManager {
     /**
      * Singleton instance of the GameManager.
      */
@@ -72,28 +73,39 @@ public class GameManager extends GameManagerAdapter {
     private Coordinate lastComputerShot;
 
 
+    private static final ReentrantLock instanceLock = new ReentrantLock();
+
+
     /**
-     * Private constructor to enforce Singleton pattern.
-     * Initializes the game repository, AI strategy, random generator,
-     * and sets initial game state.
+     * Lock for ensuring thread-safe game state modifications.
      */
+    private final ReentrantLock gameLock;
+
     private GameManager() {
         this.repository = new GameRepository();
         this.aiStrategy = new RandomAIStrategy();
         this.random = new Random();
         this.gameStatus = GameStatus.SETUP;
         this.isPlayerTurn = true;
+        this.gameLock = new ReentrantLock();
     }
 
     /**
-     * Returns the singleton instance of GameManager.
-     * Creates a new instance if one does not exist.
+     * Gets the singleton instance of GameManager.
+     * Thread-safe implementation using double-checked locking.
      *
-     * @return the singleton GameManager instance
+     * @return the single GameManager instance
      */
     public static GameManager getInstance() {
         if (instance == null) {
-            instance = new GameManager();
+            instanceLock.lock();
+            try {
+                if (instance == null) {
+                    instance = new GameManager();
+                }
+            } finally {
+                instanceLock.unlock();
+            }
         }
         return instance;
     }
@@ -107,20 +119,25 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public void startNewGame(String playerNickname) {
-        humanPlayer = new Player(playerNickname);
-        computerPlayer = new ComputerPlayer();
+        gameLock.lock();
+        try {
+            humanPlayer = new Player(playerNickname);
+            computerPlayer = new ComputerPlayer();
 
-        placeComputerShips();
+            placeComputerShips();
 
-        gameStatus = GameStatus.SETUP;
-        isPlayerTurn = true;
-        lastComputerShot = null;
-        aiStrategy.reset();
+            gameStatus = GameStatus.SETUP;
+            isPlayerTurn = true;
+            lastComputerShot = null;
+            aiStrategy.reset();
+        } finally {
+            gameLock.unlock();
+        }
     }
 
     /**
-     * Places all ships for the computer player randomly on the board.
-     * Attempts to place each ship up to 1000 times before moving to the next ship.
+     * Places all computer ships randomly on the board.
+     * Uses random coordinates and orientations with collision detection.
      */
     private void placeComputerShips() {
         List<IShip> fleet = ShipFactory.createFleet();
@@ -144,29 +161,32 @@ public class GameManager extends GameManagerAdapter {
             }
         }
     }
-
     /**
      * Loads a previously saved game from the repository.
      * Restores players, game status, turn information, and updates available shots.
      */
     @Override
     public void loadGame() {
-        SerializableGameData data = repository.loadGame();
+        gameLock.lock();
+        try {
+            SerializableGameData data = repository.loadGame();
 
-        if (data != null) {
-            this.humanPlayer = data.getHumanPlayer();
-            this.computerPlayer = (ComputerPlayer) data.getComputerPlayer();
-            this.gameStatus = data.getGameStatus();
-            this.isPlayerTurn = data.isPlayerTurn();
+            if (data != null) {
+                this.humanPlayer = data.getHumanPlayer();
+                this.computerPlayer = (ComputerPlayer) data.getComputerPlayer();
+                this.gameStatus = data.getGameStatus();
+                this.isPlayerTurn = data.isPlayerTurn();
 
-            updateComputerAvailableShots();
+                updateComputerAvailableShots();
+            }
+        } finally {
+            gameLock.unlock();
         }
     }
 
     /**
-     * Updates the computer player's available shots list based on the current
-     * state of the human player's board. Marks cells that have already been
-     * hit or missed as taken.
+     * Updates the computer's AI strategy with already-taken shots.
+     * Synchronizes AI state with loaded game state.
      */
     private void updateComputerAvailableShots() {
         IBoard playerBoard = humanPlayer.getBoard();
@@ -183,8 +203,6 @@ public class GameManager extends GameManagerAdapter {
             }
         }
     }
-
-
     /**
      * Processes a shot from the human player at the specified coordinate.
      * Updates cell status, ship hit state, and checks for sunk ships and win conditions.
@@ -194,46 +212,50 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public ShotResult processPlayerShot(Coordinate coordinate) {
-        if (!isPlayerTurn || gameStatus != GameStatus.PLAYING) {
-            return ShotResult.INVALID;
-        }
+        gameLock.lock();
+        try {
+            if (!isPlayerTurn || gameStatus != GameStatus.PLAYING) {
+                return ShotResult.INVALID;
+            }
 
-        IBoard computerBoard = computerPlayer.getBoard();
-        Cell cell = computerBoard.getCell(coordinate);
+            IBoard computerBoard = computerPlayer.getBoard();
+            Cell cell = computerBoard.getCell(coordinate);
 
-        if (cell == null || cell.isHit() || cell.isMiss()) {
-            return ShotResult.INVALID;
-        }
+            if (cell == null || cell.isHit() || cell.isMiss()) {
+                return ShotResult.INVALID;
+            }
 
-        IShip ship = computerBoard.getShipAt(coordinate);
+            IShip ship = computerBoard.getShipAt(coordinate);
 
-        if (ship == null) {
-            cell.setStatus(CellStatus.MISS);
-            isPlayerTurn = false;
-            saveGame();
-            return ShotResult.WATER;
-        }
+            if (ship == null) {
+                cell.setStatus(CellStatus.MISS);
+                isPlayerTurn = false;
+                saveGameInternal();
+                return ShotResult.WATER;
+            }
 
-        ship.hit(coordinate);
-        cell.setStatus(CellStatus.HIT);
+            ship.hit(coordinate);
+            cell.setStatus(CellStatus.HIT);
 
-        if (ship.isSunk()) {
-            markShipAsSunk(computerBoard, ship);
+            if (ship.isSunk()) {
+                markShipAsSunk(computerBoard, ship);
 
-            if (computerBoard.allShipsSunk()) {
-                gameStatus = GameStatus.PLAYER_WON;
-                saveGame();
+                if (computerBoard.allShipsSunk()) {
+                    gameStatus = GameStatus.PLAYER_WON;
+                    saveGameInternal();
+                    return ShotResult.SUNK;
+                }
+
+                saveGameInternal();
                 return ShotResult.SUNK;
             }
 
-            saveGame();
-            return ShotResult.SUNK;
+            saveGameInternal();
+            return ShotResult.HIT;
+        } finally {
+            gameLock.unlock();
         }
-
-        saveGame();
-        return ShotResult.HIT;
     }
-
     /**
      * Processes a shot from the computer player.
      * Uses AI strategy to select a target, updates cell status, and checks for
@@ -243,59 +265,64 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public ShotResult processComputerShot() {
-        if (isPlayerTurn || gameStatus != GameStatus.PLAYING) {
-            return ShotResult.INVALID;
-        }
+        gameLock.lock();
+        try {
+            if (isPlayerTurn || gameStatus != GameStatus.PLAYING) {
+                return ShotResult.INVALID;
+            }
 
-        Coordinate coordinate = aiStrategy.selectTarget(humanPlayer.getBoard());
+            Coordinate coordinate = aiStrategy.selectTarget(humanPlayer.getBoard());
 
-        if (coordinate == null) {
-            coordinate = computerPlayer.getNextShot();
-        }
+            if (coordinate == null) {
+                coordinate = computerPlayer.getNextShot();
+            }
 
-        if (coordinate == null) {
-            return ShotResult.INVALID;
-        }
+            if (coordinate == null) {
+                return ShotResult.INVALID;
+            }
 
-        lastComputerShot = coordinate;
-        computerPlayer.markShotTaken(coordinate);
+            lastComputerShot = coordinate;
+            computerPlayer.markShotTaken(coordinate);
 
-        IBoard playerBoard = humanPlayer.getBoard();
-        Cell cell = playerBoard.getCell(coordinate);
+            IBoard playerBoard = humanPlayer.getBoard();
+            Cell cell = playerBoard.getCell(coordinate);
 
-        IShip ship = playerBoard.getShipAt(coordinate);
+            IShip ship = playerBoard.getShipAt(coordinate);
 
-        if (ship == null) {
-            cell.setStatus(CellStatus.MISS);
-            isPlayerTurn = true;
-            aiStrategy.updateStrategy(coordinate, false);
-            saveGame();
-            return ShotResult.WATER;
-        }
+            if (ship == null) {
+                cell.setStatus(CellStatus.MISS);
+                isPlayerTurn = true;
+                aiStrategy.updateStrategy(coordinate, false);
+                saveGameInternal();
+                return ShotResult.WATER;
+            }
 
-        ship.hit(coordinate);
-        cell.setStatus(CellStatus.HIT);
-        aiStrategy.updateStrategy(coordinate, true);
+            ship.hit(coordinate);
+            cell.setStatus(CellStatus.HIT);
+            aiStrategy.updateStrategy(coordinate, true);
 
-        if (ship.isSunk()) {
-            markShipAsSunk(playerBoard, ship);
+            if (ship.isSunk()) {
+                markShipAsSunk(playerBoard, ship);
 
-            if (playerBoard.allShipsSunk()) {
-                gameStatus = GameStatus.COMPUTER_WON;
-                saveGame();
+                if (playerBoard.allShipsSunk()) {
+                    gameStatus = GameStatus.COMPUTER_WON;
+                    saveGameInternal();
+                    return ShotResult.SUNK;
+                }
+
+                saveGameInternal();
                 return ShotResult.SUNK;
             }
 
-            saveGame();
-            return ShotResult.SUNK;
+            saveGameInternal();
+            return ShotResult.HIT;
+        } finally {
+            gameLock.unlock();
         }
-
-        saveGame();
-        return ShotResult.HIT;
     }
 
     /**
-     * Marks all cells occupied by a sunk ship with SUNK status.
+     * Marks all cells of a sunk ship with SUNK status.
      *
      * @param board the board containing the ship
      * @param ship the ship that has been sunk
@@ -308,7 +335,6 @@ public class GameManager extends GameManagerAdapter {
             }
         }
     }
-
     /**
      * Returns the human player instance.
      *
@@ -316,16 +342,27 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public IPlayer getHumanPlayer() {
-        return humanPlayer;
+        gameLock.lock();
+        try {
+            return humanPlayer;
+        } finally {
+            gameLock.unlock();
+        }
     }
 
     /**
-     * Returns the last coordinate where the computer player took a shot.
+     * Gets the coordinate of the last computer shot.
+     * Thread-safe accessor method.
      *
-     * @return the last computer shot coordinate, or null if no shot has been taken
+     * @return the last shot coordinate, or null if no shot has been made
      */
     public Coordinate getLastComputerShot() {
-        return lastComputerShot;
+        gameLock.lock();
+        try {
+            return lastComputerShot;
+        } finally {
+            gameLock.unlock();
+        }
     }
 
     /**
@@ -335,7 +372,12 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public IPlayer getComputerPlayer() {
-        return computerPlayer;
+        gameLock.lock();
+        try {
+            return computerPlayer;
+        } finally {
+            gameLock.unlock();
+        }
     }
 
     /**
@@ -345,19 +387,29 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public GameStatus getGameStatus() {
-        return gameStatus;
+        gameLock.lock();
+        try {
+            return gameStatus;
+        } finally {
+            gameLock.unlock();
+        }
     }
 
     /**
-     * Sets the game status to the specified value.
-     * Only saves the game if the status is set to PLAYING.
+     * Sets the current game status.
+     * Automatically saves the game if transitioning to PLAYING status.
      *
      * @param status the new game status
      */
     public void setGameStatus(GameStatus status) {
-        this.gameStatus = status;
-        if (status == GameStatus.PLAYING) {
-            saveGame();
+        gameLock.lock();
+        try {
+            this.gameStatus = status;
+            if (status == GameStatus.PLAYING) {
+                saveGameInternal();
+            }
+        } finally {
+            gameLock.unlock();
         }
     }
 
@@ -368,28 +420,48 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public boolean isPlayerTurn() {
-        return isPlayerTurn;
+        gameLock.lock();
+        try {
+            return isPlayerTurn;
+        } finally {
+            gameLock.unlock();
+        }
     }
-
     /**
      * Switches the turn between the human player and computer player.
      */
     @Override
     public void switchTurn() {
-        isPlayerTurn = !isPlayerTurn;
+        gameLock.lock();
+        try {
+            isPlayerTurn = !isPlayerTurn;
+        } finally {
+            gameLock.unlock();
+        }
     }
-
     /**
      * Saves the current game state to the repository.
      * Only saves if the game status is PLAYING.
      */
     @Override
     public void saveGame() {
+        gameLock.lock();
+        try {
+            saveGameInternal();
+        } finally {
+            gameLock.unlock();
+        }
+    }
+
+    /**
+     * Internal method to save the game without acquiring the lock.
+     * Should only be called when lock is already held.
+     */
+    private void saveGameInternal() {
         if (gameStatus == GameStatus.PLAYING) {
             repository.saveGame(humanPlayer, computerPlayer, gameStatus, isPlayerTurn);
         }
     }
-
     /**
      * Checks if the game has a winner.
      *
@@ -397,9 +469,13 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public boolean hasWinner() {
-        return gameStatus == GameStatus.PLAYER_WON || gameStatus == GameStatus.COMPUTER_WON;
+        gameLock.lock();
+        try {
+            return gameStatus == GameStatus.PLAYER_WON || gameStatus == GameStatus.COMPUTER_WON;
+        } finally {
+            gameLock.unlock();
+        }
     }
-
     /**
      * Returns the winner of the game.
      *
@@ -407,12 +483,17 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public IPlayer getWinner() {
-        if (gameStatus == GameStatus.PLAYER_WON) {
-            return humanPlayer;
-        } else if (gameStatus == GameStatus.COMPUTER_WON) {
-            return computerPlayer;
+        gameLock.lock();
+        try {
+            if (gameStatus == GameStatus.PLAYER_WON) {
+                return humanPlayer;
+            } else if (gameStatus == GameStatus.COMPUTER_WON) {
+                return computerPlayer;
+            }
+            return null;
+        } finally {
+            gameLock.unlock();
         }
-        return null;
     }
 
     /**
@@ -421,15 +502,20 @@ public class GameManager extends GameManagerAdapter {
      */
     @Override
     public void resetGame() {
-        if (humanPlayer != null) {
-            humanPlayer.reset();
+        gameLock.lock();
+        try {
+            if (humanPlayer != null) {
+                humanPlayer.reset();
+            }
+            if (computerPlayer != null) {
+                computerPlayer.reset();
+            }
+            gameStatus = GameStatus.SETUP;
+            isPlayerTurn = true;
+            lastComputerShot = null;
+            aiStrategy.reset();
+        } finally {
+            gameLock.unlock();
         }
-        if (computerPlayer != null) {
-            computerPlayer.reset();
-        }
-        gameStatus = GameStatus.SETUP;
-        isPlayerTurn = true;
-        lastComputerShot = null;
-        aiStrategy.reset();
     }
 }
