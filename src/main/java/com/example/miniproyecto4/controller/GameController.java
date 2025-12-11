@@ -1,4 +1,5 @@
 package com.example.miniproyecto4.controller;
+import javafx.scene.layout.Pane;
 
 import com.example.miniproyecto4.model.Cell.Cell;
 import com.example.miniproyecto4.model.Cell.CellStatus;
@@ -9,6 +10,7 @@ import com.example.miniproyecto4.model.Ship.IShip;
 import com.example.miniproyecto4.model.Ship.ShipFactory;
 import com.example.miniproyecto4.model.Shot.ShotResult;
 import com.example.miniproyecto4.model.Validation.Orientation;
+import com.example.miniproyecto4.view.Components.ShipImageView;
 import com.example.miniproyecto4.view.Lose;
 import com.example.miniproyecto4.view.Menu;
 import com.example.miniproyecto4.view.WinView;
@@ -32,6 +34,7 @@ import java.util.Optional;
  * board updates, and game state transitions.
  */
 public class GameController {
+<<<<<<< HEAD
     /**
      * Flag indicating whether the player is currently viewing enemy ships.
      */
@@ -40,6 +43,10 @@ public class GameController {
     /**
      * Label displaying the current game status and turn information.
      */
+=======
+    private ShipImageView cursorShipImage;
+    private Pane gameContainer;
+>>>>>>> 3078e57 (intento en vano)
     @FXML
     private Label statusLabel;
 
@@ -161,8 +168,48 @@ public class GameController {
     }
 
     /**
+<<<<<<< HEAD
      * Sets the board views for the game.
      * Loads existing game state if available, otherwise sets up placement mode.
+=======
+     * Sets up the cursor ship preview that follows the mouse.
+     */
+    private void setupCursorShipPreview() {
+        // Obtener el contenedor principal del juego
+        gameContainer = (Pane) playerBoard.getParent().getParent();
+
+        if (gameContainer != null && currentShipIndex < playerFleet.size()) {
+            IShip ship = playerFleet.get(currentShipIndex);
+
+            // Crear la imagen del barco que seguirá al cursor
+            cursorShipImage = new ShipImageView(ship.getType(), 40, currentOrientation);
+            cursorShipImage.setImageOpacity(0.7);
+            cursorShipImage.setVisible(false);
+
+            // Agregar al contenedor principal (por encima de todo)
+            gameContainer.getChildren().add(cursorShipImage);
+
+            // Configurar el seguimiento del mouse
+            gameContainer.setOnMouseMoved(e -> {
+                if (placementMode && cursorShipImage != null) {
+                    cursorShipImage.setVisible(true);
+                    cursorShipImage.setLayoutX(e.getX() - 20); // Centrar en el cursor
+                    cursorShipImage.setLayoutY(e.getY() - 20);
+                }
+            });
+
+            gameContainer.setOnMouseExited(e -> {
+                if (cursorShipImage != null) {
+                    cursorShipImage.setVisible(false);
+                }
+            });
+        }
+    }
+
+    /**
+     * Sets the board views for the player and enemy.
+     * Determines whether to load a saved game state or start placement mode.
+>>>>>>> 3078e57 (intento en vano)
      *
      * @param playerBoard the visual representation of the player's board
      * @param enemyBoard the visual representation of the enemy's board
@@ -319,6 +366,7 @@ public class GameController {
      * Sets up the ship placement mode.
      * Initializes cell event handlers for ship placement and preview.
      */
+
     private void setupPlacementMode() {
         updateShipsRemaining();
         updateCurrentShipLabel();
@@ -338,11 +386,19 @@ public class GameController {
                 cell.setOnMouseExited(e -> clearShipPreview());
             }
         }
+
+        // AGREGAR ESTA LÍNEA AL FINAL:
+        setupCursorShipPreview();
     }
 
     /**
+<<<<<<< HEAD
      * Shows a preview of the current ship at the specified coordinate.
      * Displays valid (green) or invalid (red) placement preview.
+=======
+     * Shows a visual preview of ship placement at the given coordinate.
+     * Displays the ship image with the current orientation.
+>>>>>>> 3078e57 (intento en vano)
      *
      * @param coordinate the coordinate to preview ship placement at
      */
@@ -365,20 +421,12 @@ public class GameController {
                 previewCoord = new Coordinate(coordinate.getX(), coordinate.getY() + i);
             }
 
-            if (isValidPreviewCoordinate(previewCoord)) {
+            if (previewCoord.getX() >= 0 && previewCoord.getX() < 10 &&
+                    previewCoord.getY() >= 0 && previewCoord.getY() < 10) {
                 previewCoordinates.add(previewCoord);
                 CellView cell = playerBoard.getCell(previewCoord);
                 if (cell != null) {
-                    cell.showPreview(true);
-                }
-            } else {
-                if (previewCoord.getX() >= 0 && previewCoord.getX() < 10 &&
-                        previewCoord.getY() >= 0 && previewCoord.getY() < 10) {
-                    previewCoordinates.add(previewCoord);
-                    CellView cell = playerBoard.getCell(previewCoord);
-                    if (cell != null) {
-                        cell.showPreview(false);
-                    }
+                    cell.showPreview(isValidPreviewCoordinate(previewCoord));
                 }
             }
         }
@@ -431,6 +479,13 @@ public class GameController {
             playerBoard.drawContinuousShip(ship);
 
             currentShipIndex++;
+
+            // Remover la imagen del cursor anterior
+            if (cursorShipImage != null && gameContainer != null) {
+                gameContainer.getChildren().remove(cursorShipImage);
+                cursorShipImage = null;
+            }
+
             updateShipsRemaining();
             updateCurrentShipLabel();
 
@@ -438,6 +493,9 @@ public class GameController {
                 startGameButton.setDisable(false);
                 currentShipLabel.setVisible(false);
                 statusLabel.setText("¡Todos los barcos colocados! Presiona 'Iniciar Juego'");
+            } else {
+                // Crear la imagen del siguiente barco
+                setupCursorShipPreview();
             }
         } else {
             statusLabel.setText("Posición inválida - Intenta otra ubicación");
@@ -457,6 +515,11 @@ public class GameController {
 
         updateCurrentShipLabel();
         clearShipPreview();
+
+        // Rotar la imagen del cursor
+        if (cursorShipImage != null) {
+            cursorShipImage.rotate(currentOrientation);
+        }
     }
 
     /**
@@ -478,6 +541,13 @@ public class GameController {
     private void handleStartGame() {
         placementMode = false;
         clearShipPreview();
+
+        // Remover la imagen del cursor
+        if (cursorShipImage != null && gameContainer != null) {
+            gameContainer.getChildren().remove(cursorShipImage);
+            cursorShipImage = null;
+        }
+
         gameManager.setGameStatus(GameStatus.PLAYING);
 
         instructionLabel.setVisible(false);
