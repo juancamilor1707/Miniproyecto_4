@@ -22,15 +22,15 @@
 <div align="center">
 
 ### Main Game Interface
-![Game Screenshot](./screenshots/game-main.png)
+![Game Screenshot](./images/mainGameInterface.png)
 *Strategic gameplay with dual board view*
 
 ### Ship Placement Phase
-![Ship Placement](./screenshots/ship-placement.png)
+![Ship Placement](./images/shipPlacement.png)
 *Intuitive ship placement with visual preview*
 
 ### Battle in Action
-![Battle Scene](./screenshots/battle-action.png)
+![Battle Scene](./images/battleScene.png)
 *Real-time combat with hit/miss indicators*
 
 </div>
